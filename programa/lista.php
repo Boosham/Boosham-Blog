@@ -379,32 +379,42 @@ if (empty($row)) {
 
     <script>
         function updateGiscusTheme() {
-            const theme = document.body.getAttribute('data-theme') === 'light' ? 'gruvbox_light' : 'dark';
+            const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'gruvbox_light' : 'dark';
             const iframe = document.querySelector('iframe.giscus-frame');
             if (!iframe) return;
             iframe.contentWindow.postMessage({ giscus: { setConfig: { theme } } }, 'https://giscus.app');
         }
 
-        // Observar cambios de tema si tienes un switch
-        const observer = new MutationObserver(updateGiscusTheme);
-        observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+        // Observar cambios de tema en <html> (controlado por Encabezado.php)
+        const giscusObserver = new MutationObserver(updateGiscusTheme);
+        giscusObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     </script>
 
-    <script src="https://giscus.app/client.js"
-            data-repo="Boosham/Boosham-Blog"
-            data-repo-id="R_kgDOR04UGQ"
-            data-category="Blog"
-            data-category-id="DIC_kwDOR04UGc4C5oO8"
-            data-mapping="specific"
-            data-term="Programa-ID-<?= $id ?>"
-            data-strict="1"
-            data-reactions-enabled="1"
-            data-emit-metadata="0"
-            data-input-position="top"
-            data-theme="dark"
-            data-lang="es"
-            crossorigin="anonymous"
-            async>
+    <script>
+        // Cargar Giscus dinámicamente con el tema correcto desde localStorage (mismo que Encabezado.php)
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const giscusTheme = savedTheme === 'light' ? 'gruvbox_light' : 'dark';
+
+            const script = document.createElement('script');
+            script.src = 'https://giscus.app/client.js';
+            script.setAttribute('data-repo', 'Boosham/Boosham-Blog');
+            script.setAttribute('data-repo-id', 'R_kgDOR04UGQ');
+            script.setAttribute('data-category', 'Blog');
+            script.setAttribute('data-category-id', 'DIC_kwDOR04UGc4C5oO8');
+            script.setAttribute('data-mapping', 'specific');
+            script.setAttribute('data-term', 'Programa-ID-<?= $id ?>');
+            script.setAttribute('data-strict', '1');
+            script.setAttribute('data-reactions-enabled', '1');
+            script.setAttribute('data-emit-metadata', '0');
+            script.setAttribute('data-input-position', 'top');
+            script.setAttribute('data-theme', giscusTheme);
+            script.setAttribute('data-lang', 'es');
+            script.setAttribute('crossorigin', 'anonymous');
+            script.async = true;
+
+            document.querySelector('.giscus').appendChild(script);
+        })();
     </script>
 
     <script>
