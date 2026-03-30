@@ -366,11 +366,46 @@ if (empty($row)) {
                 Descargar Software</a>
         </div>
 
+        <!-- Sección de Comentarios Giscus -->
+        <div class="comments-container" style="max-width: 900px; margin: 60px auto 0; padding: 20px; background: var(--card-bg); border: 1px solid var(--header-border); border-radius: 20px; backdrop-filter: blur(10px);">
+            <div class="giscus"></div>
+        </div>
+
     </div>
 
     <div class="footer-wrapper">
         <?php include '../footer.php'; ?>
     </div>
+
+    <script>
+        function updateGiscusTheme() {
+            const theme = document.body.getAttribute('data-theme') === 'light' ? 'gruvbox_light' : 'dark';
+            const iframe = document.querySelector('iframe.giscus-frame');
+            if (!iframe) return;
+            iframe.contentWindow.postMessage({ giscus: { setConfig: { theme } } }, 'https://giscus.app');
+        }
+
+        // Observar cambios de tema si tienes un switch
+        const observer = new MutationObserver(updateGiscusTheme);
+        observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+    </script>
+
+    <script src="https://giscus.app/client.js"
+            data-repo="Boosham/Boosham-Blog"
+            data-repo-id="R_kgDOR04UGQ"
+            data-category="Blog"
+            data-category-id="DIC_kwDOR04UGc4C5oO8"
+            data-mapping="specific"
+            data-term="Programa-ID-<?= $id ?>"
+            data-strict="1"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="top"
+            data-theme="dark"
+            data-lang="es"
+            crossorigin="anonymous"
+            async>
+    </script>
 
     <script>
         /* Lógica de puntos interactivos — idéntica al index */
