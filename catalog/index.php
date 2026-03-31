@@ -147,6 +147,27 @@ if($res){
             <?php foreach($programas as $p): ?>
                 <?php 
                 $desc = !empty($p['descripcion']) ? $p['descripcion'] : 'Sin descripción disponible.';
+                
+                $estrellas = isset($p['estrellas_cache']) ? (float)$p['estrellas_cache'] : 0;
+                $starSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+                $filledStarSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+                
+                if ($estrellas > 0) {
+                    $percentage = ($estrellas / 5) * 100 . '%';
+                    $ratingHtml = "
+                        <div style='display:flex; align-items:center; gap:8px; margin-top:10px;'>
+                            <div style='position: relative; display: inline-flex; width: 70px; height: 14px;'>
+                                <div style='display: flex; position: absolute; top:0; left:0; color: gray; opacity: 0.3;'>" . str_repeat($starSvg, 5) . "</div>
+                                <div style='display: flex; position: absolute; top:0; left:0; color: #fbbf24; overflow: hidden; width: {$percentage};'>
+                                    <div style='display:flex; width: 70px;'>" . str_repeat($filledStarSvg, 5) . "</div>
+                                </div>
+                            </div>
+                            <span style='color:var(--text-color); font-size:0.8rem; font-weight:700;'>{$estrellas}</span>
+                        </div>
+                    ";
+                } else {
+                    $ratingHtml = "<div style='margin-top:10px;'><span style='color:gray; font-size:0.8rem; opacity:0.7;'>Sin calificar aún</span></div>";
+                }
                 ?>
                 <a href="../programa/lista.php?id=<?= $p['id'] ?>" class="program-card">
                     <?php if(!empty($p['imagen_url'])): ?>
@@ -156,6 +177,7 @@ if($res){
                     <?php endif; ?>
                     <h3 class="program-title"><?= htmlspecialchars($p['titulo']) ?></h3>
                     <p class="program-desc"><?= htmlspecialchars($desc) ?></p>
+                    <?= $ratingHtml ?>
                 </a>
             <?php endforeach; ?>
         <?php endif; ?>

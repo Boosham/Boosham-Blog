@@ -471,44 +471,7 @@ if (
         font-size: 0.85rem;
     }
 
-    /* Botón llamativo (Iniciar Sesión) */
-    .btn-cta {
-        background: var(--orange-btn);
-        color: var(--text-color);
-        padding: 10px 24px;
-        border-radius: 50px;
-        text-decoration: none;
-        font-size: 0.85rem;
-        font-weight: 600;
-        box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
-        transition: 0.3s;
-        white-space: nowrap;
-    }
 
-    .btn-cta:hover {
-        background: #ea580c;
-        transform: translateY(-2px);
-    }
-
-    /* Botón gris (Regístrate) */
-    .btn-register {
-        background: var(--search-bg);
-        color: var(--btn-reg-text);
-        padding: 10px 24px;
-        border-radius: 50px;
-        text-decoration: none;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        transition: 0.3s;
-        white-space: nowrap;
-    }
-
-    .btn-register:hover {
-        background: rgba(255, 255, 255, 0.18);
-        color: var(--text-color);
-        transform: translateY(-2px);
-    }
 </style>
 
 <div class="header-wrapper">
@@ -530,20 +493,11 @@ if (
             </div>
             <a href="#">DMCA</a>
             <a href="#">Blog</a>
+            <a href="#">Foro</a>
+            <a href="#">Acerca De...</a>
         </nav>
 
         <div class="header-actions">
-            <div class="search-container">
-                <input type="text" class="search-bar" id="headerSearchInput" placeholder="Buscar programas..."
-                    autocomplete="off">
-                <button class="search-btn" id="headerSearchBtn" type="button" aria-label="Buscar">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                    </svg>
-                </button>
-                <div class="search-results" id="searchResults"></div>
-            </div>
             <div class="theme-toggle" id="themeToggleBtn" aria-label="Cambiar Tema" title="Cambiar Tema">
                 <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -563,8 +517,17 @@ if (
                     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
                 </svg>
             </div>
-            <a href="#" class="btn-register">Regístrate</a>
-            <a href="<?= $encabezado_base ?>admin/login.php" class="btn-cta">Iniciar Sesión</a>
+            <div class="search-container">
+                <input type="text" class="search-bar" id="headerSearchInput" placeholder="Buscar programas..."
+                    autocomplete="off">
+                <button class="search-btn" id="headerSearchBtn" type="button" aria-label="Buscar">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                    </svg>
+                </button>
+                <div class="search-results" id="searchResults"></div>
+            </div>
         </div>
     </header>
 </div>
