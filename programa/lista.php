@@ -120,6 +120,28 @@ if (empty($row)) {
             color: var(--text-color);
         }
 
+        /* Hero icon — padding keeps edge images from touching the border */
+        .hero-program-icon {
+            width: 130px;
+            height: 130px;
+            border-radius: 16px;
+            border: 1px solid var(--header-border);
+            flex-shrink: 0;
+            object-fit: cover;
+            padding: 6px;
+            box-sizing: border-box;
+            background: var(--card-bg);
+            overflow: hidden;
+        }
+        .hero-program-icon.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            border-color: var(--card-border);
+        }
+
         .hero-details p {
             font-size: 1.1rem;
             line-height: 1.5;
@@ -408,9 +430,41 @@ if (empty($row)) {
             /* Prevent clicks on the image from bubbling to backdrop */
             pointer-events: none;
         }
+        /* Lightbox open animation */
         @keyframes lb-in {
             from { opacity: 0; transform: scale(0.88); }
             to   { opacity: 1; transform: scale(1); }
+        }
+        /* Lightbox close animation */
+        @keyframes lb-out {
+            from { opacity: 1; transform: scale(1); }
+            to   { opacity: 0; transform: scale(0.88); }
+        }
+        #screenshot-lightbox img {
+            max-width: 90vw;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: 14px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.9);
+            animation: lb-in 0.25s ease forwards;
+            pointer-events: none;
+        }
+        #screenshot-lightbox.closing img {
+            animation: lb-out 0.22s ease forwards;
+        }
+        /* Fade the backdrop too */
+        #screenshot-lightbox {
+            transition: background 0.25s ease, backdrop-filter 0.25s ease;
+        }
+        #screenshot-lightbox.closing {
+            background: rgba(0,0,0,0);
+            backdrop-filter: blur(0px);
+        }
+        /* Hide the fixed nav when lightbox is open */
+        body.lightbox-open .header-wrapper {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
         }
         #lightbox-close {
             position: fixed;
@@ -428,7 +482,7 @@ if (empty($row)) {
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10002; /* Above lightbox backdrop */
+            z-index: 10002;
             transition: background 0.2s;
         }
         #lightbox-close:hover { background: rgba(255,255,255,0.3); }
@@ -458,10 +512,9 @@ if (empty($row)) {
             <div class="hero-info-panel">
                 <?php if (!empty($row['imagen_url']) && strpos($row['imagen_url'], 'via.placeholder') === false): ?>
                     <img src="<?= htmlspecialchars($row['imagen_url']) ?>" alt="Icono del Software"
-                         style="width:130px;height:130px;border-radius:16px;object-fit:cover;border:1px solid var(--header-border);flex-shrink:0;">
+                         class="hero-program-icon">
                 <?php else: ?>
-                    <div class="program-icon-placeholder"
-                        style="width:130px;height:130px;border-radius:16px;border:1px solid var(--card-border);display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:800;flex-shrink:0;">???</div>
+                    <div class="hero-program-icon placeholder">???</div>
                 <?php endif; ?>
                 <div class="hero-details">
                     <h1><?= htmlspecialchars($row['titulo'] ?? 'Sin Título') ?></h1>
@@ -897,12 +950,26 @@ if (empty($row)) {
         function openLightbox(src) {
             if (!lightbox || !lbImg) return;
             lbImg.src = src;
+            lightbox.classList.remove("closing"); // reset in case it was mid-close
             lightbox.classList.add("open");
+            document.body.classList.add("lightbox-open"); // hides header
         }
         function closeLightbox() {
-            if (!lightbox) return;
-            lightbox.classList.remove("open");
-            if (lbImg) lbImg.src = "";
+            if (!lightbox || !lightbox.classList.contains("open")) return;
+            lightbox.classList.add("closing");
+            // Wait for the lb-out animation (220ms) then hide
+            const img = lightbox.querySelector("img");
+            function onDone() {
+                lightbox.classList.remove("open", "closing");
+                document.body.classList.remove("lightbox-open"); // restore header
+                if (lbImg) lbImg.src = "";
+                if (img) img.removeEventListener("animationend", onDone);
+            }
+            if (img) {
+                img.addEventListener("animationend", onDone, { once: true });
+            } else {
+                setTimeout(onDone, 230);
+            }
         }
 
         // Click any cover-flow image to open lightbox

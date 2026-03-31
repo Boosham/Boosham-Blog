@@ -93,6 +93,10 @@ if($res){
             margin-bottom: 20px;
             object-fit: cover;
             border: 1px solid var(--card-border);
+            /* Margin so the image doesn't touch the card edges */
+            padding: 6px;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         .program-title {
             font-size: 1.15rem;
