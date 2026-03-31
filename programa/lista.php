@@ -77,36 +77,29 @@ if (empty($row)) {
         .hero-software {
             display: flex;
             align-items: stretch;
+            justify-content: space-between;
             gap: 0;
             margin-bottom: 50px;
+            min-height: 340px; /* Balance óptimo para imágenes de 250px + reflejo */
             background: var(--header-bg);
             border: 1px solid var(--header-border);
             border-radius: 20px;
             box-shadow: var(--card-shadow);
             transition: all 0.3s ease;
-            overflow: hidden; /* clips every internal panel cleanly */
+            overflow: hidden;
         }
 
-        /* Left info panel */
+        /* Left info panel - takes most space */
         .hero-info-panel {
             display: flex;
             align-items: center;
             gap: 28px;
             padding: 36px 32px;
-            flex: 0 0 auto;
-        }
-
-        /* Right screenshots panel */
-        .hero-screenshots-panel {
             flex: 1;
             min-width: 0;
-            border-left: 1px solid var(--header-border);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            background: rgba(0,0,0,0.15);
         }
+
+
 
         /* When there are NO screenshots, hero-info-panel takes full width like before */
         .hero-software.no-screenshots .hero-info-panel {
@@ -215,6 +208,14 @@ if (empty($row)) {
                 flex-direction: column;
                 text-align: center;
                 padding: 30px 20px;
+            }
+
+            .hero-screenshots-panel {
+                flex: 1 1 auto;
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--header-border);
+                min-height: 200px;
             }
 
             .hero-details h1 {
@@ -329,62 +330,119 @@ if (empty($row)) {
             color: #bfa082 !important;
         }
 
-        /* --- COVER FLOW (JS-driven, inside hero right panel) --- */
-        :root { --cover-size: 210px; }
+        /* --- COVER FLOW — Robust JS-Driven Library Flip --- */
+        :root { --cover-size: 250px; } /* Renderizado base grande para nitidez absoluta */
 
         .hero-screenshots-panel {
-            max-height: 260px;
+            flex: 0 0 450px; 
+            border-left: 1px solid var(--header-border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+            position: relative;
         }
 
         .hero-screenshots-panel .cards {
             list-style: none;
             white-space: nowrap;
             margin: 0;
-            /* Horizontal padding = 50% minus half a card, centering first/last card */
-            padding: 16px calc(50% - (var(--cover-size) / 2));
+            /* Padding dinámico: permitimos espacio vertical para el zoom 1.5x y reflejos */
+            padding: 40px calc(50% - (var(--cover-size) / 2));
+            width: 100%;
+            display: flex;
+            align-items: center;
             overflow-x: scroll;
             overflow-y: visible;
             scroll-snap-type: x mandatory;
             -ms-overflow-style: none;
             scrollbar-width: none;
+            perspective: 1000px;
+            scroll-behavior: smooth;
         }
         .hero-screenshots-panel .cards::-webkit-scrollbar { display: none; }
 
         .hero-screenshots-panel .cards li {
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 var(--cover-size);
             width: var(--cover-size);
             aspect-ratio: 16/9;
             scroll-snap-align: center;
-            margin: 0 6px;
-            position: relative; /* required for z-index */
-            vertical-align: middle;
+            position: relative;
+            transition: z-index 0.3s;
+            margin: 0;
         }
         .hero-screenshots-panel .cards li img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 10px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-            display: block;
+            border-radius: 8px;
             cursor: pointer;
-            /* JS sets the transform; transition makes it buttery smooth */
-            transform-origin: center center;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-            will-change: transform;
+            display: block;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            /* Transiciones suaves para el efecto flip controlado por JS */
+            transition: transform 0.3s cubic-bezier(0.2, 0, 0.2, 1), filter 0.3s ease;
+            -webkit-box-reflect: below 0.4em linear-gradient(rgb(0 0 0 / 0), rgb(0 0 0 / 0.2));
+            /* Eliminamos will-change para forzar el redibujado nítido del navegador */
         }
-        /* Single screenshot: centered, no JS animation needed */
+
+        /* ---------- Single screenshot: bigger, centered ---------- */
         .hero-screenshots-panel .cards.single-image {
             display: flex;
             justify-content: center;
-            padding: 16px;
+            align-items: center;
             overflow: hidden;
+            padding: 16px;
         }
-        .hero-screenshots-panel .cards.single-image li { }
-        .hero-screenshots-panel .cards.single-image li img { transform: none !important; }
+        .hero-screenshots-panel .cards.single-image li {
+            width: 90%;
+            aspect-ratio: 16/9;
+            perspective: none;
+        }
+        .hero-screenshots-panel .cards.single-image li img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            transform: none !important;
+            filter: none !important;
+            -webkit-box-reflect: none;
+        }
+        @keyframes rotate-cover {
+            0% {
+                transform: translateX(-40%) rotateY(-60deg) scale(0.85);
+                filter: brightness(0.3) contrast(1.2);
+            }
+            35% {
+                transform: translateX(0) rotateY(-50deg) scale(0.9);
+                filter: brightness(0.5);
+            }
+            50% {
+                transform: rotateY(0deg) translateZ(50px) scale(1.45);
+                filter: brightness(1);
+            }
+            65% {
+                transform: translateX(0) rotateY(50deg) scale(0.9);
+                filter: brightness(0.5);
+            }
+            100% {
+                transform: translateX(40%) rotateY(60deg) scale(0.85);
+                filter: brightness(0.3) contrast(1.2);
+            }
+        }
 
         /* Carousel arrow buttons */
         .carousel-wrapper {
             position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .carousel-btn {
             position: absolute;
@@ -404,8 +462,8 @@ if (empty($row)) {
             transition: background 0.2s;
         }
         .carousel-btn:hover { background: var(--orange-btn); border-color: var(--orange-btn); }
-        .carousel-btn.left  { left:  8px; }
-        .carousel-btn.right { right: 8px; }
+        .carousel-btn.left  { left:  12px; }
+        .carousel-btn.right { right: 12px; }
 
         /* Lightbox — above everything including the fixed header (z:1000) */
         #screenshot-lightbox {
@@ -519,14 +577,6 @@ if (empty($row)) {
                 <div class="hero-details">
                     <h1><?= htmlspecialchars($row['titulo'] ?? 'Sin Título') ?></h1>
                     <p><?= htmlspecialchars($row['descripcion'] ?? 'Sin descripción disponible.') ?></p>
-                    <div id="hero-rating" style="margin-top:12px;display:flex;align-items:center;gap:10px;font-size:0.95rem;color:var(--text-muted);">
-                        <div style="position:relative;display:inline-flex;width:120px;height:24px;">
-                            <div style="display:flex;position:absolute;top:0;left:0;color:gray;opacity:0.3;">
-                                <?php for ($i=0;$i<5;$i++): ?><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg><?php endfor; ?>
-                            </div>
-                        </div>
-                        <span>Cargando calificaciones...</span>
-                    </div>
                 </div>
             </div>
 
@@ -658,16 +708,16 @@ if (empty($row)) {
         <div class="giscus-reviews-container" style="max-width: 900px; margin: 40px auto; padding: 30px; border-radius: 24px; background: var(--card-bg); border: 1px solid var(--header-border); backdrop-filter: blur(12px);">
             <h2 style="color: var(--text-color); text-align: center; margin-bottom: 20px;">Comentarios y Calificaciones</h2>
 
-            <!-- Panel de resumen de puntuación -->
-            <div id="rating-summary-panel" style="margin-bottom: 28px; padding: 20px 24px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid var(--header-border); display:flex; gap:28px; align-items:center; flex-wrap:wrap;">
+            <!-- Panel de resumen de puntuación (Premium Style) -->
+            <div id="rating-summary-panel" style="margin-bottom: 28px; padding: 25px 30px; border-radius: 20px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); display:flex; gap:35px; align-items:center; flex-wrap:wrap; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);">
                 <!-- Puntuación grande a la izquierda -->
-                <div style="text-align:center; min-width:100px;">
-                    <div id="summary-avg" style="font-size: 3rem; font-weight:800; color: #fbbf24; line-height:1;">—</div>
-                    <div id="summary-stars" style="margin-top:6px;"></div>
-                    <div id="summary-votes" style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">Cargando...</div>
+                <div style="text-align:center; min-width:110px;">
+                    <div id="summary-avg" style="font-size: 3.8rem; font-weight:900; color: #fbbf24; line-height:1; text-shadow: 0 0 15px rgba(251,191,36,0.25);">—</div>
+                    <div id="summary-stars" style="margin-top:10px;"></div>
+                    <div id="summary-votes" style="font-size:0.85rem; color:var(--text-muted); margin-top:8px; letter-spacing: 0.5px;">Cargando...</div>
                 </div>
-                <!-- Barras/círculos por estrellas a la derecha -->
-                <div id="summary-breakdown" style="flex:1; min-width:200px; display:flex; flex-direction:column; gap:7px;">
+                <!-- Barras de desglose a la derecha -->
+                <div id="summary-breakdown" style="flex:1; min-width:220px; display:flex; flex-direction:column; gap:9px;">
                     <!-- Se inyecta por JS -->
                 </div>
             </div>
@@ -692,11 +742,8 @@ if (empty($row)) {
                 // SVG Lucide Star
                 const starSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
                 const filledStarSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
-                const heroRatingContainer = document.getElementById('hero-rating');
-
-                // Si no hay discusión todavía, muestra el estado neutro en hero Y en el panel
+                // Si no hay discusión todavía, muestra el estado neutro en el panel
                 if (event.data.giscus.error === 'Discussion not found' || !event.data.giscus.discussion) {
-                    renderHeroRating(null, 0);
                     renderSummaryPanel(null, 0, {});
                     return;
                 }
@@ -711,28 +758,6 @@ if (empty($row)) {
                         points += (weights[key] * count); 
                         votes += count; 
                     }
-                }
-
-                // ---- helper: render star bar in hero ----
-                function renderHeroRating(avg, votes) {
-                    if (!heroRatingContainer) return;
-                    if (avg === null) {
-                        heroRatingContainer.innerHTML = `
-                            <div style="position:relative;display:inline-flex;width:120px;height:24px;">
-                                <div style="display:flex;position:absolute;top:0;left:0;color:gray;opacity:0.3;">${starSvg.repeat(5)}</div>
-                            </div><span>Sé el primero en calificar</span>`;
-                        return;
-                    }
-                    const pct = (avg / 5) * 100 + '%';
-                    heroRatingContainer.innerHTML = `
-                        <div style="position:relative;display:inline-flex;width:120px;height:24px;">
-                            <div style="display:flex;position:absolute;top:0;left:0;color:gray;opacity:0.3;">${starSvg.repeat(5)}</div>
-                            <div style="display:flex;position:absolute;top:0;left:0;color:#fbbf24;overflow:hidden;width:${pct};">
-                                <div style="display:flex;width:120px;">${filledStarSvg.repeat(5)}</div>
-                            </div>
-                        </div>
-                        <span style="font-weight:700;color:var(--text-color);margin-left:10px;">${avg} / 5.0</span>
-                        <span style="margin-left:5px;opacity:0.7;">(${votes} valoraciones)</span>`;
                 }
 
                 // ---- helper: render rating summary panel ----
@@ -797,7 +822,6 @@ if (empty($row)) {
 
                 if (votes > 0) {
                     const avg = (points / votes).toFixed(1);
-                    renderHeroRating(avg, votes);
                     renderSummaryPanel(avg, votes, reactionCounts);
 
                     // Cache to server
@@ -805,7 +829,6 @@ if (empty($row)) {
                     fetch('../admin/actualizar_cache.php?id=' + idPrograma + '&estrellas=' + avg)
                         .then(() => console.log('Caché de estrellas actualizado en BD'));
                 } else {
-                    renderHeroRating(null, 0);
                     renderSummaryPanel(null, 0, {});
                 }
             }
@@ -887,62 +910,69 @@ if (empty($row)) {
     </script>
 
     <script>
-    /* =============================================
-       JS-DRIVEN COVER FLOW + LIGHTBOX
-       This approach avoids the CSS scroll-driven
-       animation z-index stacking context bug.
-    ============================================= */
-    document.addEventListener("DOMContentLoaded", () => {
+    /* Arrow buttons + Lightbox */
+        document.addEventListener("DOMContentLoaded", () => {
+            const ul      = document.getElementById("cover-flow-cards");
+            const prevBtn = document.getElementById("prevBtn");
+            const nextBtn = document.getElementById("nextBtn");
+            const items   = ul ? Array.from(ul.querySelectorAll("li")) : [];
 
-        // ---------- COVER FLOW ----------
-        const ul = document.getElementById("cover-flow-cards");
-        if (ul && !ul.classList.contains("single-image")) {
-
-            const items = Array.from(ul.querySelectorAll("li"));
-            const COVER_SIZE = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cover-size')) || 210;
 
             function updateFlow() {
-                const scrollCenter = ul.scrollLeft + ul.clientWidth / 2;
+                if (!ul || items.length < 2) return;
+                const containerCenter = ul.scrollLeft + ul.clientWidth / 2;
+                // Sensibilidad: giro total a partir de 120px de distancia del centro
+                const maxRange = 120; 
 
                 items.forEach(li => {
-                    const img  = li.querySelector("img");
+                    const img = li.querySelector("img");
                     if (!img) return;
 
-                    const liCenter = li.offsetLeft + li.offsetWidth / 2;
-                    const dist     = liCenter - scrollCenter;          // negative = left, positive = right
-                    const absDist  = Math.abs(dist);
-                    const maxDist  = COVER_SIZE * 2;                   // cards further than 2 card-widths are fully rotated
-                    const ratio    = Math.max(0, 1 - absDist / maxDist); // 1 at center, 0 at edge
+                    // Usamos getBoundingClientRect para más precisión en el cálculo relativo
+                    const rect = li.getBoundingClientRect();
+                    const containerRect = ul.getBoundingClientRect();
+                    const liCenter = rect.left + rect.width / 2;
+                    const containerVisualCenter = containerRect.left + containerRect.width / 2;
+                    
+                    const dist = liCenter - containerVisualCenter;
+                    const absDist = Math.abs(dist);
+                    
+                    // Ratio: 1 en el centro, 0 lejos
+                    const ratio = Math.max(0, 1 - absDist / maxRange);
 
-                    // Scale: 1.0 at center, 0.78 at sides
-                    const scale    = 0.78 + 0.22 * ratio;
+                    // Library Flip Logic — ARQUITECTURA "SCALE DOWN" (Nitidez HD)
+                    // Renderizada base a 250px: en el centro se mantiene casi al 100% (nítida)
+                    // En los laterales se reduce (0.6x)
+                    const rotateY = (1 - ratio) * (dist < 0 ? -60 : 60);
+                    const scale = 0.6 + (0.45 * ratio); // 0.6 a 1.05
+                    const brightness = 0.3 + (0.7 * ratio); // 0.3 a 1.0
+                    const zIndex = Math.round(ratio * 100);
 
-                    // RotateY: 0 at center, ±45deg at sides
-                    // Note: left cards (dist<0) rotate left (negative), right cards rotate right (positive)
-                    const rotateY  = (1 - ratio) * (dist < 0 ? -45 : 45);
-
-                    // z-index: center = highest. Use integer for reliable stacking.
-                    li.style.zIndex = Math.round(ratio * 100);
-
-                    img.style.transform    = `perspective(600px) rotateY(${rotateY}deg) scale(${scale})`;
-                    img.style.boxShadow    = `0 ${4 + ratio * 14}px ${16 + ratio * 20}px rgba(0,0,0,${0.35 + ratio * 0.35})`;
+                    li.style.zIndex = zIndex;
+                    img.style.transform = `rotateY(${rotateY}deg) scale(${scale})`;
+                    img.style.filter = `brightness(${brightness})`;
                 });
             }
 
-            // Run on scroll + init
-            ul.addEventListener("scroll", updateFlow, { passive: true });
-            updateFlow();
+            if (ul && items.length > 1) {
+                ul.addEventListener("scroll", updateFlow, { passive: true });
+                window.addEventListener("resize", updateFlow);
+                updateFlow(); // Init
+            }
 
-            // Arrow buttons
-            const prevBtn = document.getElementById("prevBtn");
-            const nextBtn = document.getElementById("nextBtn");
-            const scrollAmount = COVER_SIZE + 12 * 2; // card width + margins
+            if (ul && prevBtn) {
+                prevBtn.addEventListener("click", () => {
+                    ul.scrollBy({ left: -(ul.querySelector('li')?.offsetWidth || 250), behavior: "smooth" });
+                });
+            }
+            if (ul && nextBtn) {
+                nextBtn.addEventListener("click", () => {
+                    ul.scrollBy({ left:  (ul.querySelector('li')?.offsetWidth || 250), behavior: "smooth" });
+                });
+            }
 
-            if (prevBtn) prevBtn.addEventListener("click", () => ul.scrollBy({ left: -scrollAmount, behavior: "smooth" }));
-            if (nextBtn) nextBtn.addEventListener("click", () => ul.scrollBy({ left:  scrollAmount, behavior: "smooth" }));
-        }
+            // ---------- LIGHTBOX ----------
 
-        // ---------- LIGHTBOX ----------
         const lightbox = document.getElementById("screenshot-lightbox");
         const lbImg    = document.getElementById("lightbox-img");
         const closeBtn = document.getElementById("lightbox-close");
