@@ -236,7 +236,8 @@ if (
         font-size: 0.9rem;
         font-weight: 500;
         transition: 0.3s;
-        white-space: nowrap; /* Mantiene el texto en una línea durante la animación */
+        white-space: nowrap;
+        /* Mantiene el texto en una línea durante la animación */
     }
 
     .nav-menu a:hover {
@@ -310,13 +311,14 @@ if (
     .header-actions {
         display: flex;
         align-items: center;
-        gap: 12px; 
+        gap: 12px;
         flex-shrink: 0;
         white-space: nowrap;
     }
 
     .glass-header.scrolled .header-actions {
-        gap: 8px; /* Restaurado el espaciado compacto original */
+        gap: 8px;
+        /* Restaurado el espaciado compacto original */
     }
 
     .search-container {
@@ -333,7 +335,8 @@ if (
         border-radius: 50px;
         font-size: 0.85rem;
         outline: none;
-        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s; /* Sincronizado con la animación del encabezado */
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+        /* Sincronizado con la animación del encabezado */
         width: 160px;
     }
 
@@ -345,7 +348,8 @@ if (
     .search-bar:focus {
         background: var(--search-bg-focus);
         border-color: rgba(255, 255, 255, 0.4);
-        width: 180px; /* Ancho original restaurado */
+        width: 180px;
+        /* Ancho original restaurado */
     }
 
     /* En modo scrolled, el ancho se pisa arriba para ser más pequeño */
@@ -471,7 +475,126 @@ if (
         font-size: 0.85rem;
     }
 
+    /* --- RESPONSIVO PARA MÓVILES (Encabezado) --- */
+    .mobile-menu-btn {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--text-color);
+        cursor: pointer;
+        padding: 8px;
+    }
 
+    @media (max-width: 850px) {
+        .header-wrapper {
+            padding: 0 10px !important;
+            top: 15px !important;
+        }
+
+        .glass-header {
+            padding: 10px 15px !important;
+            flex-wrap: wrap;
+            /* Importante para que nav caiga a la 2da línea */
+            gap: 10px;
+            border-radius: 16px !important;
+            max-width: 100% !important;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            /* Ocupa el 100% y por el flex-wrap de su padre pasa a la línea de abajo */
+            display: none;
+            gap: 15px;
+            padding-top: 10px;
+            border-top: 1px solid var(--header-border);
+            margin-top: 5px;
+            align-items: center;
+            order: 3;
+            /* Siempre va debajo de logo(1) y actions(2) */
+        }
+
+        .nav-menu.active {
+            display: flex;
+        }
+
+        /* En movil, los links del dropdown son una capa flotante (sobre los botones) */
+        .nav-dropdown-menu {
+            position: absolute;
+            /* Ya NO es static, ahora flota para NO empujar otros links */
+            opacity: 1;
+            visibility: visible;
+            transform: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            background: var(--card-bg);
+            /* Un fondo sólido para que tape bien */
+            border: 1px solid var(--header-border);
+            border-radius: 12px;
+            display: none;
+            padding: 10px 0;
+            text-align: center;
+            z-index: 100;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 180px;
+            margin-top: 10px;
+        }
+
+        .nav-dropdown.active .nav-dropdown-menu {
+            display: block;
+        }
+
+        /* Buscar ocupa su propia fila en móviles si está abierto el menú o se acorta */
+        .search-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: flex-end;
+            order: 1;
+        }
+
+        .search-bar {
+            width: 120px;
+            padding: 8px 30px 8px 12px;
+        }
+
+        .search-bar:focus {
+            width: 100%;
+            /* Expande al tomar foco */
+            position: absolute;
+            right: 0;
+            z-index: 10;
+        }
+
+        /* Resultados full width en móvil de forma centrada */
+        .search-results {
+            position: fixed;
+            top: 75px;
+            /* Justo debajo del encabezado de móvil */
+            left: 5%;
+            width: 90%;
+            min-width: unset;
+            max-height: 75vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .theme-toggle {
+            width: 32px;
+            height: 32px;
+            order: 2;
+        }
+
+        /* Oculta un poco la barra de acciones cuando el menú colapsa pero mantén lo vital */
+        .header-actions {
+            gap: 8px;
+        }
+
+        .mobile-menu-btn {
+            display: block;
+            order: 3;
+        }
+    }
 </style>
 
 <div class="header-wrapper">
@@ -480,7 +603,7 @@ if (
             <img src="<?= $encabezado_base ?>logo/text_logo.svg" alt="Boosham Blog">
         </a>
 
-        <nav class="nav-menu">
+        <nav class="nav-menu" id="navMenu">
             <div class="nav-dropdown">
                 <a href="<?= $encabezado_base ?>catalog/" class="nav-dropdown-toggle">Programas</a>
                 <div class="nav-dropdown-menu">
@@ -499,7 +622,7 @@ if (
 
         <div class="header-actions">
             <div class="theme-toggle" id="themeToggleBtn" aria-label="Cambiar Tema" title="Cambiar Tema">
-                <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                     style="display: none;">
                     <circle cx="12" cy="12" r="4" />
@@ -512,15 +635,15 @@ if (
                     <path d="m6.34 17.66-1.41 1.41" />
                     <path d="m19.07 4.93-1.41 1.41" />
                 </svg>
-                <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
                 </svg>
             </div>
+
             <div class="search-container">
-                <input type="text" class="search-bar" id="headerSearchInput" placeholder="Buscar programas..."
-                    autocomplete="off">
-                <button class="search-btn" id="headerSearchBtn" type="button" aria-label="Buscar">
+                <input type="text" class="search-bar" id="headerSearchInput" placeholder="Buscar..." autocomplete="off">
+                <button class="search-btn" id="headerSearchBtn" aria-label="Buscar">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path
                             d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
@@ -528,20 +651,39 @@ if (
                 </button>
                 <div class="search-results" id="searchResults"></div>
             </div>
+
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menú">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
         </div>
     </header>
 </div>
 
 <script>
-    // Script original para el scroll
-    window.addEventListener('scroll', () => {
+    // Lógica para el scroll y tamaño responsivo
+    function checkHeader() {
         const header = document.getElementById('mainHeader');
-        if (window.scrollY > 60) {
+        // En móviles (<= 850px) forzamos que sea el diseño "pequeño" (.scrolled)
+        if (window.innerWidth <= 850) {
             header.classList.add('scrolled');
         } else {
-            header.classList.remove('scrolled');
+            if (window.scrollY > 60) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
         }
-    });
+    }
+
+    window.addEventListener('scroll', checkHeader);
+    window.addEventListener('resize', checkHeader);
+    document.addEventListener('DOMContentLoaded', checkHeader);
+    checkHeader(); // Ejecutar inmediatamente por si ya cargó
 
     // Live search
     (function () {
@@ -644,6 +786,29 @@ if (
             } else {
                 setTheme('light');
             }
+        });
+    })();
+
+    // Lógica para menú móvil
+    (function () {
+        const btn = document.getElementById('mobileMenuBtn');
+        const nav = document.getElementById('navMenu');
+
+        if (btn && nav) {
+            btn.addEventListener('click', () => {
+                nav.classList.toggle('active');
+            });
+        }
+
+        // Dropdown toggle en móvil
+        const dropdowns = document.querySelectorAll('.nav-dropdown-toggle');
+        dropdowns.forEach(dd => {
+            dd.addEventListener('click', (e) => {
+                if (window.innerWidth <= 850) {
+                    e.preventDefault();
+                    e.target.closest('.nav-dropdown').classList.toggle('active');
+                }
+            });
         });
     })();
 </script>

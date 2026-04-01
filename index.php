@@ -201,7 +201,57 @@
             z-index: 1;
             transition: 0.3s;
         }
-        
+
+        /* --- RESPONSIVO PARA MÓVILES (Index) --- */
+        @media (max-width: 768px) {
+            .hero-logo-box {
+                padding: 10px 20px;
+                margin-bottom: 10px;
+            }
+            .hero-logo-box img {
+                height: 5.5rem !important; /* Más pequeño en móviles */
+            }
+            .hero-text-box {
+                font-size: 0.95rem;
+                padding: 1rem;
+                margin: 1rem 15px; /* Evita que toque los bordes */
+                line-height: 1.5;
+            }
+            .hero-section {
+                height: 120vh; /* Menos scroll necesario para pasar el hero */
+            }
+            .catalog-section {
+                padding: 10vh 15px 5vh;
+            }
+            .catalog-section h2 {
+                font-size: 2rem !important;
+                margin-bottom: 3rem !important;
+            }
+            .card__content {
+                padding: 20px;
+                flex-direction: column; /* Apila el icono y el texto verticalmente */
+                text-align: center;
+                gap: 15px;
+                min-height: auto;
+            }
+            .stacking-icon {
+                width: 80px !important;
+                height: 80px !important;
+                min-width: 80px !important;
+            }
+            .carousel-outer {
+                padding: 60px 0; /* Menos espacio en móvil */
+            }
+            .carousel-box {
+                width: 200px; /* Tarjetas más pequeñas en carrusel */
+                height: 120px;
+                margin: 0 10px;
+            }
+            @keyframes scroll-loop {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(calc(-220px * 5)); } /* Ajustado al nuevo ancho (200 + 10x2) */
+            }
+        }
     </style>
 </head>
 <body>

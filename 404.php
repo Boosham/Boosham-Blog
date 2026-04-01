@@ -95,6 +95,41 @@
             }
         }
 
+        /* --- RESPONSIVO MÓVILES --- */
+        @media (max-width: 839px) {
+            #page {
+                font-size: 18px; /* Tamaño absoluto, mucho más amigable */
+                width: 90%;
+            }
+            h1 {
+                font-size: 4.5em; /* Ligeramente más chico para que encaje mejor */
+                margin-top: 10px;
+            }
+            #details {
+                flex-direction: column; /* Apila QR sobre texto */
+                align-items: center;
+                text-align: center;
+                gap: 15px;
+            }
+            #stopcode {
+                padding-left: 0;
+            }
+            /* Ajuste juego móvil interactivo transparente */
+            #mobile-controls {
+                bottom: 20px;
+                padding: 0 15px;
+            }
+            .mobile-button {
+                width: 65px;
+                height: 65px;
+                font-size: 24px;
+            }
+            #m-left { left: 10px; }
+            #m-right { left: 85px; }
+            #m-fire { right: 10px; }
+            #m-up { right: 10px; bottom: 95px; }
+        }
+
         /* LOCAL CSS FOR SCORE BOX */
         #kickass-pointstab {
             position: fixed !important;

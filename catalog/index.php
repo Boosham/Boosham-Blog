@@ -14,6 +14,7 @@ if($res){
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo de Programas</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -118,10 +119,70 @@ if($res){
             overflow: hidden;
         }
 
-        /* LIGHT MODE OVERRIDES */
         [data-theme="light"] .program-icon {
             background-color: #b8a994 !important; /* Color madera para placeholders */
             border-color: #a3927b !important;
+        }
+
+        /* --- RESPONSIVO --- */
+        @media (max-width: 768px) {
+            .catalog-container {
+                padding: 100px 15px 40px; /* Menos padding lateral y superior */
+            }
+            .catalog-header h1 {
+                font-size: 2.2rem;
+            }
+            .catalog-header p {
+                font-size: 1rem !important;
+                padding: 0 10px;
+            }
+            .filter-btn {
+                padding: 8px 18px;
+                font-size: 0.85rem;
+            }
+            .filters {
+                gap: 10px;
+                margin-bottom: 35px;
+            }
+            .catalog-grid {
+                /* Forzamos 1 sola columna en pantallas móviles para que fluya mejor */
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .program-card {
+                padding: 15px;
+                border-radius: 15px;
+                /* En una sola columna, quizás sea mejor que fluyan en horizontal si cabe, pero
+                   como la card ya usa flex-direction: column por defecto, centramos todo para
+                   que la tarjeta luzca hermosa a ancho completo */
+                align-items: center;
+                text-align: center;
+            }
+            .program-icon {
+                width: 100px;
+                height: 100px;
+                margin-bottom: 12px;
+                border-radius: 12px;
+            }
+            .program-title {
+                font-size: 1rem;
+            }
+            .program-desc {
+                font-size: 0.8rem;
+                -webkit-line-clamp: 2; /* Menos texto en móvil para hacer caja cuadrada perfecta */
+            }
+        }
+        @media (max-width: 480px) {
+            .catalog-grid {
+                grid-template-columns: 1fr; /* 1 sola columna masiva en celulares puros */
+            }
+            .program-card {
+                aspect-ratio: auto;
+            }
+            .program-icon {
+                width: 120px;
+                height: 120px;
+            }
         }
     </style>
 </head>
