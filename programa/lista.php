@@ -1,12 +1,17 @@
 <?php
 require_once '../config.php';
-$id = isset($_GET['id']) ? (int) $_GET['id'] : 1;
-$row = null;
 
-if (isset($conn)) {
-    $stmt = $conn->prepare("SELECT * FROM programas WHERE id = ?");
+$dia = isset($_GET['dia']) ? (int)$_GET['dia'] : 0;
+$mes = isset($_GET['mes']) ? (int)$_GET['mes'] : 0;
+$anio = isset($_GET['anio']) ? (int)$_GET['anio'] : 0;
+$slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
+$row = null;
+$id = 0;
+
+if (isset($conn) && $dia > 0 && $mes > 0 && $anio > 0 && $slug !== '') {
+    $stmt = $conn->prepare("SELECT * FROM programas WHERE slug = ? AND DAY(fecha_creacion) = ? AND MONTH(fecha_creacion) = ? AND YEAR(fecha_creacion) = ?");
     if ($stmt) {
-        $stmt->bind_param("i", $id);
+        $stmt->bind_param("siii", $slug, $dia, $mes, $anio);
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
@@ -14,22 +19,12 @@ if (isset($conn)) {
     }
 }
 if (empty($row)) {
-    // Modo fallback con Placeholders
-    $row = [
-        'titulo' => 'Programa de Prueba',
-        'descripcion' => 'Este es un texto placeholder (Lorem Ipsum) de descripción general para visualizar el diseño.',
-        'link_descarga' => '#',
-        'imagen_url' => 'https://via.placeholder.com/300',
-        'caracteristicas' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        'novedades' => 'Lorem ipsum dolor sit amet, actualizaciones recientes incluidas.',
-        'requisitos' => 'Windows 10, Memoria RAM de 4GB, Procesador Dual-Core.',
-        'publico_objetivo' => 'Estudiantes, profesionales y público en general.',
-        'info_archivo' => 'Formato: EXE, Tamaño aproximado: 50MB.',
-        'instrucciones' => '1. Descargar el archivo.\n2. Ejecutar el instalador.\n3. Seguir el asistente.',
-        'aviso_legal' => 'La descarga se realiza bajo su propio riesgo.',
-        'reviews' => '★★★★★ Reseña de usuario genérica (Lorem Ipsum)'
-    ];
+    http_response_code(404);
+    require_once '../404/404.php';
+    exit;
 }
+$id = $row['id'];
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -38,7 +33,9 @@ if (empty($row)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($row['titulo'] ?? 'Programa') ?></title>
-    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -604,31 +601,38 @@ if (empty($row)) {
         /* --- RESPONSIVO PARA MÓVILES --- */
         @media (max-width: 768px) {
             :root {
-                --cover-size: 260px; /* Screenshots ajustados (punto medio) */
+                --cover-size: 260px;
+                /* Screenshots ajustados (punto medio) */
             }
+
             .container {
                 padding: 100px 15px 30px;
             }
+
             /* Hero Panel Adjustments */
             .hero-info-panel {
                 flex-direction: column;
                 text-align: center;
                 padding: 25px 15px !important;
             }
+
             .hero-program-icon {
                 margin: 0 auto;
             }
+
             .hero-details p {
                 font-size: 1rem;
             }
-            #hero-rating-container > div {
+
+            #hero-rating-container>div {
                 justify-content: center !important;
             }
-            
+
             /* Grid Sections */
             .grid-sections {
                 grid-template-columns: 1fr;
             }
+
             .section-card {
                 padding: 20px;
             }
@@ -638,6 +642,7 @@ if (empty($row)) {
                 padding: 35px 20px;
                 margin-top: 40px;
             }
+
             .btn-download-final {
                 padding: 15px 40px;
                 font-size: 1.05rem;
@@ -649,15 +654,18 @@ if (empty($row)) {
             .giscus-reviews-container {
                 padding: 20px 15px !important;
             }
+
             #rating-summary-panel {
                 flex-direction: column;
                 padding: 20px 15px !important;
                 gap: 20px !important;
             }
+
             .reaction-badges-container {
                 flex-direction: column !important;
             }
-            .reaction-badges-container > div {
+
+            .reaction-badges-container>div {
                 width: 100% !important;
                 justify-content: center !important;
             }
@@ -687,33 +695,40 @@ if (empty($row)) {
         <div class="hero-software<?= $hasScreenshots ? '' : ' no-screenshots' ?>">
             <div class="hero-info-panel">
                 <?php if (!empty($row['imagen_url']) && strpos($row['imagen_url'], 'via.placeholder') === false): ?>
-                    <img src="<?= htmlspecialchars($row['imagen_url']) ?>" alt="Icono del Software"
+                    <img src="<?= htmlspecialchars(str_replace('../', '/', $row['imagen_url'])) ?>" alt="Icono del Software"
                         class="hero-program-icon">
                 <?php else: ?>
                     <div class="hero-program-icon placeholder">???</div>
                 <?php endif; ?>
                 <div class="hero-details">
                     <h1><?= htmlspecialchars($row['titulo'] ?? 'Sin Título') ?></h1>
-                    <p style="margin-bottom: 12px;"><?= htmlspecialchars($row['descripcion'] ?? 'Sin descripción disponible.') ?></p>
+                    <p style="margin-bottom: 12px;">
+                        <?= htmlspecialchars($row['descripcion'] ?? 'Sin descripción disponible.') ?></p>
                     <div id="hero-rating-container" style="margin-bottom: 25px; min-height: 24px;">
                         <?php
-                        $estrellas = isset($row['estrellas_cache']) ? (float)$row['estrellas_cache'] : 0;
+                        $estrellas = isset($row['estrellas_cache']) ? (float) $row['estrellas_cache'] : 0;
                         if ($estrellas > 0):
                             $percentage = ($estrellas / 5) * 100 . '%';
                             $starSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
                             $filledStarSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
-                        ?>
+                            ?>
                             <div style='display:flex; align-items:center; gap:10px;'>
                                 <div style='position: relative; display: inline-flex; width: 100px; height: 20px;'>
-                                    <div style='display: flex; position: absolute; top:0; left:0; color: gray; opacity: 0.3;'><?= str_repeat($starSvg, 5) ?></div>
-                                    <div id="hero-rating-stars-fill" style='display: flex; position: absolute; top:0; left:0; color: #fbbf24; overflow: hidden; width: <?= $percentage ?>; transition: width 0.5s ease-out;'>
+                                    <div
+                                        style='display: flex; position: absolute; top:0; left:0; color: gray; opacity: 0.3;'>
+                                        <?= str_repeat($starSvg, 5) ?></div>
+                                    <div id="hero-rating-stars-fill"
+                                        style='display: flex; position: absolute; top:0; left:0; color: #fbbf24; overflow: hidden; width: <?= $percentage ?>; transition: width 0.5s ease-out;'>
                                         <div style='display:flex; width: 100px;'><?= str_repeat($filledStarSvg, 5) ?></div>
                                     </div>
                                 </div>
-                                <span style='color:var(--text-color); font-size:1.1rem; font-weight:700;'><span id="hero-rating-text"><?= $estrellas ?></span> <span style='font-size:0.9rem; font-weight:normal; opacity:0.7;'>/ 5</span></span>
+                                <span style='color:var(--text-color); font-size:1.1rem; font-weight:700;'><span
+                                        id="hero-rating-text"><?= $estrellas ?></span> <span
+                                        style='font-size:0.9rem; font-weight:normal; opacity:0.7;'>/ 5</span></span>
                             </div>
                         <?php else: ?>
-                            <span id="hero-rating-empty" style='color:var(--text-muted); font-size:0.95rem; opacity:0.8;'>Aún no hay reseñas</span>
+                            <span id="hero-rating-empty"
+                                style='color:var(--text-muted); font-size:0.95rem; opacity:0.8;'>Aún no hay reseñas</span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -736,8 +751,8 @@ if (empty($row)) {
                         <?php endif; ?>
                         <ul id="cover-flow-cards" class="cards<?= $singleClass ?>">
                             <?php foreach ($images as $img): ?>
-                                <li><img src="<?= htmlspecialchars($img) ?>" alt="Screenshot"
-                                        data-src="<?= htmlspecialchars($img) ?>"></li>
+                                <li><img src="/programa/<?= htmlspecialchars($img) ?>" alt="Screenshot"
+                                        data-src="/programa/<?= htmlspecialchars($img) ?>"></li>
                             <?php endforeach; ?>
                         </ul>
                         <?php if ($numImages > 1): ?>
@@ -958,7 +973,7 @@ if (empty($row)) {
                         starsEl.innerHTML = `<div style="display:flex;gap:2px;justify-content:center;">${starSvg.repeat(5).replace(/width="24"/g, 'width="16"').replace(/height="24"/g, 'height="16"')}</div>`;
                         votesEl.textContent = 'Sin valoraciones aún';
                         bdEl.innerHTML = '<span style="font-size:0.85rem;color:var(--text-muted);">Sé el primero en calificar. Usa las reacciones de abajo ↓</span>';
-                        
+
                         const heroContainer = document.getElementById('hero-rating-container');
                         if (heroContainer) {
                             heroContainer.innerHTML = `<span id="hero-rating-empty" style='color:var(--text-muted); font-size:0.95rem; opacity:0.8;'>Aún no hay reseñas</span>`;
@@ -1028,14 +1043,20 @@ if (empty($row)) {
                     reactionCounts[key] = obj.count || 0;
                 }
 
+                const idPrograma = <?= $id ?>;
+
+                // Actualizar conteo de comentarios en BD si está disponible
+                if (event.data.giscus.discussion && event.data.giscus.discussion.totalCommentCount !== undefined) {
+                    const totalComments = event.data.giscus.discussion.totalCommentCount;
+                    fetch('/programa/guardar_comentarios.php?id=' + idPrograma + '&conteo=' + totalComments);
+                }
+
                 if (votes > 0) {
                     const avg = (points / votes).toFixed(1);
                     renderSummaryPanel(avg, votes, reactionCounts);
 
-                    // Cache to server
-                    const idPrograma = <?= $id ?>;
-                    fetch('../admin/actualizar_cache.php?id=' + idPrograma + '&estrellas=' + avg)
-                        .then(() => console.log('Caché de estrellas actualizado en BD'));
+                    // Cache de estrellas al servidor
+                    fetch('/admin/actualizar_cache.php?id=' + idPrograma + '&estrellas=' + avg);
                 } else {
                     renderSummaryPanel(null, 0, {});
                 }
@@ -1065,7 +1086,7 @@ if (empty($row)) {
             script.setAttribute('data-category', 'Blog');
             script.setAttribute('data-category-id', 'DIC_kwDOR04UGc4C5oO8');
             script.setAttribute('data-mapping', 'specific');
-            script.setAttribute('data-term', 'Programa-ID-<?= $id ?>');
+            script.setAttribute('data-term', 'Programa-<?= htmlspecialchars($row['slug']) ?>');
             script.setAttribute('data-strict', '1');
             script.setAttribute('data-reactions-enabled', '1');
             script.setAttribute('data-emit-metadata', '1'); // <-- Cambiado a 1 para reacciones
@@ -1131,34 +1152,38 @@ if (empty($row)) {
                 const containerCenter = ul.scrollLeft + ul.clientWidth / 2;
                 // Sensibilidad ajustada para una transición más suave
                 const maxRange = ul.clientWidth / 1.5;
+                const containerRect = ul.getBoundingClientRect();
+                const containerVisualCenter = containerRect.left + containerRect.width / 2;
 
-                items.forEach(li => {
+                // FASE 1: READ DOM (Evitar Reflow Forzado)
+                const measurements = items.map(li => {
                     const img = li.querySelector("img");
-                    if (!img) return;
+                    if (!img) return null;
+                    return { li, img, rect: li.getBoundingClientRect() };
+                });
 
-                    const rect = li.getBoundingClientRect();
-                    const containerRect = ul.getBoundingClientRect();
-                    const liCenter = rect.left + rect.width / 2;
-                    const containerVisualCenter = containerRect.left + containerRect.width / 2;
-
+                // FASE 2: CALCULATE
+                const calculated = measurements.map(m => {
+                    if (!m) return null;
+                    const liCenter = m.rect.left + m.rect.width / 2;
                     const dist = liCenter - containerVisualCenter;
                     const absDist = Math.abs(dist);
-
-                    // Ratio: 1 en el centro, 0 lejos
                     const ratio = Math.max(0, 1 - absDist / maxRange);
 
-                    // Solo escalar sin rotar para mantener la proporción 16:9 real
-                    const scale = 0.8 + (0.2 * ratio); // 0.8 lateral, 1.0 centro
-                    const brightness = 0.4 + (0.6 * ratio); // 0.4 lateral, 1.0 centro
+                    const scale = 0.8 + (0.2 * ratio);
+                    const brightness = 0.4 + (0.6 * ratio);
                     const zIndex = Math.round(ratio * 100);
-
-                    // Efecto overlap acercando las tarjetas laterales hacia el centro
                     const translateX = dist < 0 ? (1 - ratio) * 15 : (1 - ratio) * -15;
 
-                    li.style.zIndex = zIndex;
-                    // translateZ(0) mantiene el elemento en una capa de hardware estable
-                    img.style.transform = `translateX(${translateX}%) scale(${scale}) translateZ(0)`;
-                    img.style.filter = `brightness(${brightness})`;
+                    return { ...m, scale, brightness, zIndex, translateX };
+                });
+
+                // FASE 3: WRITE DOM
+                calculated.forEach(m => {
+                    if (!m) return;
+                    m.li.style.zIndex = m.zIndex;
+                    m.img.style.transform = `translateX(${m.translateX}%) scale(${m.scale}) translateZ(0)`;
+                    m.img.style.filter = `brightness(${m.brightness})`;
                 });
             }
 

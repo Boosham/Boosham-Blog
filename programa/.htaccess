@@ -1,0 +1,9 @@
+RewriteEngine On
+RewriteBase /programa/
+
+# Redirigir antiguas URLs con ?id= hacia la página 404 (ubicada en la raíz)
+RewriteCond %{QUERY_STRING} (^|&)id=([0-9]+)($|&) [NC]
+RewriteRule ^lista\.php$ /404/404.php? [R=301,L]
+
+# Regla para URLs amigables: /programa/lista/DD/MM/YYYY/slug
+RewriteRule ^lista/([0-9]{2})/([0-9]{2})/([0-9]{4})/([a-zA-Z0-9\-]+)$ lista.php?dia=$1&mes=$2&anio=$3&slug=$4 [QSA,L]

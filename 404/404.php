@@ -98,36 +98,57 @@
         /* --- RESPONSIVO MÓVILES --- */
         @media (max-width: 839px) {
             #page {
-                font-size: 18px; /* Tamaño absoluto, mucho más amigable */
+                font-size: 18px;
+                /* Tamaño absoluto, mucho más amigable */
                 width: 90%;
             }
+
             h1 {
-                font-size: 4.5em; /* Ligeramente más chico para que encaje mejor */
+                font-size: 4.5em;
+                /* Ligeramente más chico para que encaje mejor */
                 margin-top: 10px;
             }
+
             #details {
-                flex-direction: column; /* Apila QR sobre texto */
+                flex-direction: column;
+                /* Apila QR sobre texto */
                 align-items: center;
                 text-align: center;
                 gap: 15px;
             }
+
             #stopcode {
                 padding-left: 0;
             }
+
             /* Ajuste juego móvil interactivo transparente */
             #mobile-controls {
                 bottom: 20px;
                 padding: 0 15px;
             }
+
             .mobile-button {
                 width: 65px;
                 height: 65px;
                 font-size: 24px;
             }
-            #m-left { left: 10px; }
-            #m-right { left: 85px; }
-            #m-fire { right: 10px; }
-            #m-up { right: 10px; bottom: 95px; }
+
+            #m-left {
+                left: 10px;
+            }
+
+            #m-right {
+                left: 85px;
+            }
+
+            #m-fire {
+                right: 10px;
+            }
+
+            #m-up {
+                right: 10px;
+                bottom: 95px;
+            }
         }
 
         /* LOCAL CSS FOR SCORE BOX */
@@ -141,27 +162,35 @@
             color: #fff !important;
             font-family: 'Segoe UI', Arial, sans-serif !important;
             z-index: 1000000 !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             min-width: 150px !important;
             text-align: center !important;
             backdrop-filter: blur(5px);
         }
+
         #kickass-points {
             font-size: 32px !important;
             font-weight: 800 !important;
             margin-bottom: 5px !important;
             display: block !important;
-            color: #4CAF50 !important; /* Verde neón para el puntaje */
+            color: #4CAF50 !important;
+            /* Verde neón para el puntaje */
         }
+
         #kickass-esctoquit {
             font-size: 13px !important;
             opacity: 0.9 !important;
             display: block !important;
             letter-spacing: 0.5px !important;
         }
+
         /* Ocultar elementos innecesarios de KickAss */
-        #kickass-hello-sunshine, #kickass-weapons-menu, #kickass-bomb-menu, #kickass-pointstab-menu, .kickass-share-buttons {
+        #kickass-hello-sunshine,
+        #kickass-weapons-menu,
+        #kickass-bomb-menu,
+        #kickass-pointstab-menu,
+        .kickass-share-buttons {
             display: none !important;
         }
 
@@ -179,6 +208,7 @@
             padding: 0 40px;
             box-sizing: border-box;
         }
+
         .mobile-button {
             width: 80px;
             height: 80px;
@@ -194,16 +224,39 @@
             user-select: none;
             -webkit-user-select: none;
             backdrop-filter: blur(5px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
+
         .mobile-button:active {
             background: rgba(255, 255, 255, 0.4);
             transform: scale(0.9);
         }
-        #m-left { position: absolute; bottom: 10px; left: 30px; }
-        #m-right { position: absolute; bottom: 10px; left: 130px; }
-        #m-up { position: absolute; bottom: 100px; right: 30px; background: rgba(76, 175, 80, 0.4); }
-        #m-fire { position: absolute; bottom: 10px; right: 30px; background: rgba(244, 67, 54, 0.4); }
+
+        #m-left {
+            position: absolute;
+            bottom: 10px;
+            left: 30px;
+        }
+
+        #m-right {
+            position: absolute;
+            bottom: 10px;
+            left: 130px;
+        }
+
+        #m-up {
+            position: absolute;
+            bottom: 100px;
+            right: 30px;
+            background: rgba(76, 175, 80, 0.4);
+        }
+
+        #m-fire {
+            position: absolute;
+            bottom: 10px;
+            right: 30px;
+            background: rgba(244, 67, 54, 0.4);
+        }
     </style>
 </head>
 
@@ -213,19 +266,22 @@
     <div id="page">
         <div id="container">
             <h1>:(</h1>
-            <h2>La URL solicitada no se encontró en la web, estamos recolectando la información del error, mientras tanto juega con la nave</h2>
+            <h2>La URL solicitada no se encontró en la web, estamos recolectando la información del error, mientras
+                tanto juega con la nave</h2>
             <h2><span id="percentage">0</span>% complete</h2>
 
             <div id="details">
                 <div id="qr">
                     <div id="image">
                         <!-- Imagen del código QR -->
-                        <img src="/404/Codigo QR.png" alt="QR Code" />
+                        <img src="Codigo QR.png" alt="QR Code" />
                     </div>
                 </div>
                 <div id="stopcode">
                     <h4>
-                        <a href='index.php' style='color:white;text-decoration:underline;font-weight:bold;font-size:1.2em;z-index:9999;position:relative;'>Para volver a la página principal clickea este botón</a>
+                        <a href='index.php'
+                            style='color:white;text-decoration:underline;font-weight:bold;font-size:1.2em;z-index:9999;position:relative;'>Para
+                            volver a la página principal clickea este botón</a>
                     </h4>
                     <h5>If you call a support person, give them this info:
                         <br />Código de Error: 404
@@ -265,30 +321,30 @@
         processInterval();
     </script>
 
-<script src="404.js"></script>
-<script>
-// Generador de naves (Migrado desde 404.js)
-setInterval(function() {
-    // Solo generamos si el juego está activo
-    if(window.KICKASSGAME && window.KICKASSGAME.sessionManager && window.KICKASSGAME.sessionManager.isPlaying) {
-        var img = document.createElement('img');
-        img.src = '/404/naves.png'; // Ruta absoluta corregida
-        img.className = 'naves-enemigas';
-        img.style.position = 'absolute';
-        img.style.left = Math.random() * (window.innerWidth - 100) + 'px';
-        img.style.top = Math.random() * (window.innerHeight - 100) + 'px';
-        img.style.width = '80px';
-        img.style.zIndex = '900';
-        img.style.pointerEvents = 'auto'; // Habilitado para que las balas (elementFromPoint) puedan chocar
-        document.body.appendChild(img);
-        
-        // Registrar la nueva nave en el motor del juego
-        if (window.KICKASSGAME && window.KICKASSGAME.bulletManager) {
-            window.KICKASSGAME.bulletManager.updateEnemyIndex();
-        }
-    }
-}, 3000);
-</script>
+    <script src="404.js"></script>
+    <script>
+        // Generador de naves (Migrado desde 404.js)
+        setInterval(function () {
+            // Solo generamos si el juego está activo
+            if (window.KICKASSGAME && window.KICKASSGAME.sessionManager && window.KICKASSGAME.sessionManager.isPlaying) {
+                var img = document.createElement('img');
+                img.src = 'naves.png'; // Ruta absoluta corregida
+                img.className = 'naves-enemigas';
+                img.style.position = 'absolute';
+                img.style.left = Math.random() * (window.innerWidth - 100) + 'px';
+                img.style.top = Math.random() * (window.innerHeight - 100) + 'px';
+                img.style.width = '80px';
+                img.style.zIndex = '900';
+                img.style.pointerEvents = 'auto'; // Habilitado para que las balas (elementFromPoint) puedan chocar
+                document.body.appendChild(img);
+
+                // Registrar la nueva nave en el motor del juego
+                if (window.KICKASSGAME && window.KICKASSGAME.bulletManager) {
+                    window.KICKASSGAME.bulletManager.updateEnemyIndex();
+                }
+            }
+        }, 3000);
+    </script>
 </body>
 
 </html>

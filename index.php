@@ -1,259 +1,49 @@
 <?php require_once 'config.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Metadatos SEO Principales -->
+    <title>Boosham Blog | Herramientas y Programas para PC</title>
+    <meta name="description"
+        content="Descubre en Boosham Blog las mejores herramientas y tus programas de PC favoritos en una sola pagina.">
+    <meta name="keywords" content="descargar programas, herramientas PC, optimización, software gratis, boosham blog">
+    <meta name="author" content="Boosham">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph (Metadatos para Redes Sociales como Discord, FB, WA) -->
+    <meta property="og:title" content="Boosham Blog | Herramientas exclusivas">
+    <meta property="og:description"
+        content="Programas favoritos optimizados para PC en un solo ecosistema. ¡Descúbrelos!">
+    <meta property="og:site_name" content="Boosham Blog">
+    <meta property="og:image" content="https://booshamblog.gt.tc/favicon.svg">
+    <meta property="og:url" content="https://booshamblog.gt.tc/">
+    <meta property="og:type" content="website">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Boosham Blog",
+      "url": "https://booshamblog.gt.tc/"
+    }
+    </script>
+
+    <!-- Verificación de Google Search Console -->
+    <!-- PEGA AQUÍ TU CÓDIGO DE VERIFICACIÓN <meta name="google-site-verification" content="..." /> -->
+
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <title>Boosham blog - 8VOCASH</title>
+    <link rel="preload" as="image" href="fondos/wallpaper-index-dark.webp" fetchpriority="high">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --orange-btn: #F97316;
-        }
+    <link rel="stylesheet" href="style.min.css">
 
-        body {
-            overflow-x: hidden;
-        }
-
-        /* --- PUNTOS DE FONDO --- */
-        #dotsCanvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* --- HERO --- */
-        .hero-section {
-            position: relative;
-            height: 140vh;
-            view-timeline: --hero-timeline block;
-            z-index: 2;
-        }
-        .hero-sticky {
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 95%);
-            -webkit-mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 95%);
-        }
-        .hero-background {
-            position: absolute;
-            inset: 0;
-            background-image: var(--hero-bg);
-            background-size: cover;
-            background-position: center;
-            z-index: -1;
-            animation: hero-out linear forwards;
-            animation-timeline: --hero-timeline;
-            animation-range: exit 0% exit 100%;
-        }
-        .hero-content {
-            text-align: center;
-            animation: hero-out linear forwards;
-            animation-timeline: --hero-timeline;
-            animation-range: exit 0% exit 100%;
-        }
-        @keyframes hero-out {
-            0% { transform: scale(1); filter: blur(0px); opacity: 1; }
-            100% { transform: scale(3); filter: blur(25px); opacity: 0; }
-        }
-
-        /* --- CATÁLOGO --- */
-        .catalog-section {
-            position: relative;
-            z-index: 5;
-            margin-top: -15vh;
-            padding: 15vh 5% 5vh;
-        }
-        .dual-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 35px;
-            max-width: 1300px;
-            margin: 0 auto;
-        }
-        .card { position: sticky; top: 120px; padding-top: calc(var(--index) * 1.5rem); margin-bottom: 2rem; }
-        .card__content {
-            background: var(--carousel-bg);
-            border: 1px solid var(--card-border); color: var(--card-text);
-            border-radius: 24px;
-            padding: 30px;
-            min-height: 220px;
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-        }
-
-        [data-theme="light"] .card__content {
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-            border: 2px solid #d4cfc7 !important; /* Margen/borde más notorio para la propia card en light mode */
-            margin: 5px; /* Pequeño espaciado extra por si acaso se refería a margin CSS */
-        }
-        
-        /* Asegurar que la margen (borde) de los placeholders se note también en Dark Mode */
-        .stacking-icon {
-            border: 2px solid var(--card-border) !important;
-        }
-        
-        [data-theme="light"] .stacking-icon {
-            border: 2px solid #a3927b !important; /* Borde más oscuro y gordito pero no mucho */
-            background-color: #b8a994 !important; /* Color madera para que haga juego si no carga imagen */
-        }
-
-        /* --- CARRUSEL INFINITO (INTEGRADO) --- */
-        .carousel-outer {
-            width: 100%;
-            overflow: hidden;
-            padding: 100px 0;
-            position: relative;
-            z-index: 5;
-            background: transparent;
-        }
-        .carousel-track {
-            display: flex;
-            width: calc(320px * 10); /* 5 items + 5 duplicados */
-            animation: scroll-loop 30s linear infinite;
-        }
-        .carousel-box {
-            width: 280px;
-            height: 160px;
-            background: var(--carousel-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            margin: 0 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .carousel-box:hover {
-            border-color: var(--orange-btn);
-            transform: scale(1.05);
-            background: var(--card-bg-hover);
-        }
-        .carousel-box span {
-            color: var(--card-text); opacity: 0.7;
-            font-size: 0.8rem;
-            font-weight: 800;
-            letter-spacing: 2px;
-        }
-        @keyframes scroll-loop {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(calc(-320px * 5)); }
-        }
-
-        /* Estilos de botones rápidos */
-        .btn-orange { background: var(--orange-btn); padding: 18px 50px; border-radius: 50px; color: black; font-weight: 700; text-decoration: none; display: inline-block; transition: 0.3s; }
-        .btn-orange:hover { transform: scale(1.05); }
-        .btn-outline { background: transparent; border: 2px solid var(--orange-btn); color: var(--text-color); }
-        .btn-outline:hover { background: var(--orange-btn); color: black; }
-        
-        @media (max-width: 900px) {
-            .dual-container { grid-template-columns: 1fr; }
-        }
-
-        
-
-        .hero-section > * {
-            position: relative;
-            z-index: 2;
-        }
-    
-        .hero-logo-box {
-            background: var(--hero-logo-bg);
-            box-shadow: var(--hero-logo-shadow);
-            padding: 10px 40px;
-            border-radius: 20px;
-            display: inline-block;
-            margin-bottom: 20px;
-            transition: background 0.3s, box-shadow 0.3s;
-        }
-        .hero-text-box {
-            color: var(--hero-subtitle);
-            font-size: 1.2rem;
-            max-width: 700px;
-            margin: 2rem auto;
-            background: var(--hero-text-bg);
-            padding: 1.5rem;
-            border-radius: 15px;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: var(--hero-text-shadow);
-            border: 1px solid var(--header-border);
-            transition: background 0.3s, box-shadow 0.3s, border-color 0.3s;
-        }
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--hero-gradient-overlay);
-            pointer-events: none;
-            z-index: 1;
-            transition: 0.3s;
-        }
-
-        /* --- RESPONSIVO PARA MÓVILES (Index) --- */
-        @media (max-width: 768px) {
-            .hero-logo-box {
-                padding: 10px 20px;
-                margin-bottom: 10px;
-            }
-            .hero-logo-box img {
-                height: 5.5rem !important; /* Más pequeño en móviles */
-            }
-            .hero-text-box {
-                font-size: 0.95rem;
-                padding: 1rem;
-                margin: 1rem 15px; /* Evita que toque los bordes */
-                line-height: 1.5;
-            }
-            .hero-section {
-                height: 120vh; /* Menos scroll necesario para pasar el hero */
-            }
-            .catalog-section {
-                padding: 10vh 15px 5vh;
-            }
-            .catalog-section h2 {
-                font-size: 2rem !important;
-                margin-bottom: 3rem !important;
-            }
-            .card__content {
-                padding: 20px;
-                flex-direction: column; /* Apila el icono y el texto verticalmente */
-                text-align: center;
-                gap: 15px;
-                min-height: auto;
-            }
-            .stacking-icon {
-                width: 80px !important;
-                height: 80px !important;
-                min-width: 80px !important;
-            }
-            .carousel-outer {
-                padding: 60px 0; /* Menos espacio en móvil */
-            }
-            .carousel-box {
-                width: 200px; /* Tarjetas más pequeñas en carrusel */
-                height: 120px;
-                margin: 0 10px;
-            }
-            @keyframes scroll-loop {
-                0% { transform: translateX(0); }
-                100% { transform: translateX(calc(-220px * 5)); } /* Ajustado al nuevo ancho (200 + 10x2) */
-            }
-        }
-    </style>
 </head>
+
 <body>
 
     <?php include 'Encabezado.php'; ?>
@@ -265,11 +55,13 @@
             <div class="hero-background"></div>
             <div class="hero-content">
                 <div class="hero-logo-box">
-                    <img src="logo/logo-text.svg" alt="Boosham blog" style="height: 9rem; filter: var(--logo-filter); max-width: 100%;">
+                    <img width="380" height="144" src="logo/logo-text.svg" alt="Boosham blog"
+                        style="height: 9rem; width: 380px; filter: var(--logo-filter); max-width: 100%;">
                 </div>
-                <p class="hero-text-box">
-                    Herramientas de alto rendimiento y tus programas favoritos optimizados para PC en un solo ecosistema profesional.
-                </p>
+                <h1 class="hero-text-box" style="font-weight: normal; margin-top: 2rem; margin-bottom: 2rem;">
+                    Herramientas de alto rendimiento y tus programas favoritos optimizados para PC en un solo ecosistema
+                    profesional.
+                </h1>
                 <a href="#catalog" class="btn-orange">Entrar al catálogo</a>
             </div>
         </div>
@@ -281,15 +73,15 @@
             <?php
             $res = $conn->query("SELECT * FROM programas ORDER BY id DESC LIMIT 10");
             $programas = [];
-            if($res) {
-                while($row = $res->fetch_assoc()) {
+            if ($res) {
+                while ($row = $res->fetch_assoc()) {
                     $programas[] = $row;
                 }
             }
 
             // Fill up to 10 with placeholders
             $total = count($programas);
-            for($i = $total; $i < 10; $i++) {
+            for ($i = $total; $i < 10; $i++) {
                 $programas[] = [
                     'id' => null,
                     'titulo' => 'Próximamente',
@@ -301,30 +93,36 @@
             // Distribute into 2 columns
             $col1 = [];
             $col2 = [];
-            foreach($programas as $index => $prog) {
-                if($index % 2 == 0) {
+            foreach ($programas as $index => $prog) {
+                if ($index % 2 == 0) {
                     $col1[] = $prog;
                 } else {
                     $col2[] = $prog;
                 }
             }
-            
+
             // Function to render columns
-            function renderColumn($col, $startIndex) {
+            function renderColumn($col, $startIndex)
+            {
                 $idx = $startIndex;
                 echo '<div class="card-column">';
-                foreach($col as $p) {
+                foreach ($col as $p) {
                     $hasImg = !empty($p['imagen_url']) && strpos($p['imagen_url'], 'via.placeholder') === false;
                     /* Se corrige el uso de comillas dentro del style para evitar que se rompa el atributo HTML */
-                    $bgStyle = $hasImg ? "background:url(&quot;{$p['imagen_url']}&quot;) center/cover no-repeat;" : "background:var(--carousel-bg); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.3); font-size:2rem; font-weight:800;";
+                    $imgAbs = str_replace('../', '/', $p['imagen_url']);
+                    $bgStyle = $hasImg ? "background:url(&quot;{$imgAbs}&quot;) center/cover no-repeat;" : "background:var(--carousel-bg); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.3); font-size:2rem; font-weight:800;";
                     $innerContent = $hasImg ? "" : "???";
-                    
-                    $btn = $p['id'] 
-                        ? "<a href='programa/lista.php?id={$p['id']}' class='btn-orange btn-outline' style='padding:10px 20px; font-size:0.9rem; text-wrap:nowrap;'>Ver programa</a>" 
-                        : "<a href='#' class='btn-orange btn-outline' style='padding:10px 20px; font-size:0.9rem; filter: grayscale(1); cursor:not-allowed; text-wrap:nowrap;' title='Próximamente'>Ver programa</a>";
+
+                    if ($p['id']) {
+                        $f = date('d/m/Y', strtotime($p['fecha_creacion']));
+                        $fUrl = "programa/lista/{$f}/{$p['slug']}";
+                        $btn = "<a href='{$fUrl}' class='btn-orange btn-outline' style='padding:10px 20px; font-size:0.9rem; text-wrap:nowrap;'>Ver programa</a>";
+                    } else {
+                        $btn = "<a href='#' class='btn-orange btn-outline' style='padding:10px 20px; font-size:0.9rem; filter: grayscale(1); cursor:not-allowed; text-wrap:nowrap;' title='Próximamente'>Ver programa</a>";
+                    }
                     $desc = mb_strimwidth($p['descripcion'], 0, 100, "...");
-                    
-                    $estrellas = isset($p['estrellas_cache']) ? (float)$p['estrellas_cache'] : 0;
+
+                    $estrellas = isset($p['estrellas_cache']) ? (float) $p['estrellas_cache'] : 0;
                     if ($estrellas > 0) {
                         $percentage = ($estrellas / 5) * 100 . '%';
                         $starSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
@@ -343,7 +141,7 @@
                     } else {
                         $ratingHtml = "<div style='margin-top:10px;'><span style='color:gray; font-size:0.8rem; opacity:0.7;'>Sin calificar aún</span></div>";
                     }
-                    
+
                     echo "<div class='card' style='--index: {$idx}'>
                             <div class='card__content'>
                                 <div class='stacking-icon' style='width:140px;height:140px;{$bgStyle}border-radius:20px;border:1px solid var(--card-border);flex-shrink:0;'>{$innerContent}</div>
@@ -361,21 +159,23 @@
                 }
                 echo '</div>';
             }
-            
+
             renderColumn($col1, 1);
             renderColumn($col2, 1);
             ?>
         </div>
         <div style="text-align: center; margin-top: 4rem;">
-            <a href="catalog/index.php" class="btn-orange" style="font-size: 1.1rem; padding: 20px 60px;">Ver todo el catálogo</a>
+            <a href="catalog/index.php" class="btn-orange" style="font-size: 1.1rem; padding: 20px 60px;">Ver todo el
+                catálogo</a>
         </div>
     </main>
 
-<div style="text-align: center; padding: 100px 0 20px; position: relative; z-index: 5;">
+    <div style="text-align: center; padding: 100px 0 20px; position: relative; z-index: 5;">
         <h2 style="font-size: 2.5rem; font-weight: 800; color: var(--text-color); letter-spacing: -0.02em;">
             Programas que tenemos en nuestra página
         </h2>
-        <div style="width: 50px; height: 4px; background: var(--orange-btn); margin: 20px auto; border-radius: 10px;"></div>
+        <div style="width: 50px; height: 4px; background: var(--orange-btn); margin: 20px auto; border-radius: 10px;">
+        </div>
     </div>
 
     <div class="carousel-outer">
@@ -424,7 +224,7 @@
                 const isLight = document.documentElement.getAttribute('data-theme') === 'light';
                 let defaultColor = isLight ? 'rgba(139, 90, 43, 0.12)' : 'rgba(249, 115, 22, 0.15)';
                 let hoverRgb = isLight ? '139, 90, 43' : '249, 115, 22';
-                
+
                 let color = defaultColor;
                 if (dist < 180) {
                     const ratio = (180 - dist) / 180;
@@ -440,4 +240,5 @@
         initCanvas(); animate();
     </script>
 </body>
+
 </html>

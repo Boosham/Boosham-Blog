@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /config.php
+Disallow: /api/search.php
+Disallow: /programa/lista.php
+Sitemap: https://booshamblog.gt.tc/sitemap.xml
