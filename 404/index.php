@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BSOD 404 - Error de Sistema</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         /* CSS INTEGRADO */
         body {
@@ -13,22 +15,28 @@
             background: #3973aa;
             color: #fefeff;
             height: 100vh;
+            /* Forzar ajuste a la pantalla */
             margin: 0;
             overflow: hidden;
-            /* Evita scroll innecesario */
+            /* Evitar que disparos o naves agranden la página */
         }
 
         #page {
-            display: table;
-            height: 100%;
-            margin: 0 auto;
-            width: 70%;
-            font-size: 1.9vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 10vh 12vw;
+            /* Más margen interno para que respire */
+            box-sizing: border-box;
+            font-size: 2.8vmin;
+            /* Escala mejor con el contenedor */
         }
 
         #container {
-            display: table-cell;
-            vertical-align: middle;
+            max-width: 1000px;
+            /* Limitar el ancho máximo para que no se estire demasiado */
+            width: 100%;
         }
 
         h1,
@@ -90,8 +98,8 @@
 
         @media (min-width: 840px) {
             #page {
-                font-size: 140%;
-                width: 800px;
+                font-size: 1.4rem;
+                padding: 10vh 15vw;
             }
         }
 
@@ -99,14 +107,19 @@
         @media (max-width: 839px) {
             #page {
                 font-size: 18px;
-                /* Tamaño absoluto, mucho más amigable */
-                width: 90%;
+                padding: 30px 20px;
             }
 
             h1 {
-                font-size: 4.5em;
-                /* Ligeramente más chico para que encaje mejor */
+                font-size: 3.5em;
+                /* Reducido para que no se desborde */
                 margin-top: 10px;
+                line-height: 1;
+            }
+
+            h2 {
+                font-size: 1.2em;
+                /* Reducido para móviles */
             }
 
             #details {
@@ -227,6 +240,11 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
+        .mobile-button i {
+            width: 32px;
+            height: 32px;
+        }
+
         .mobile-button:active {
             background: rgba(255, 255, 255, 0.4);
             transform: scale(0.9);
@@ -279,12 +297,12 @@
                 </div>
                 <div id="stopcode">
                     <h4>
-                        <a href='index.php'
+                        <a href='../index.php'
                             style='color:white;text-decoration:underline;font-weight:bold;font-size:1.2em;z-index:9999;position:relative;'>Para
                             volver a la página principal clickea este botón</a>
                     </h4>
-                    <h5>If you call a support person, give them this info:
-                        <br />Código de Error: 404
+                    <h5>CODIGO DE ERROR:
+                        <br />404
                     </h5>
                 </div>
             </div>
@@ -323,10 +341,11 @@
 
     <script src="404.js"></script>
     <script>
-        // Generador de naves (Migrado desde 404.js)
+        // Generador de naves
         setInterval(function () {
-            // Solo generamos si el juego está activo
-            if (window.KICKASSGAME && window.KICKASSGAME.sessionManager && window.KICKASSGAME.sessionManager.isPlaying) {
+            // Solo generamos si el juego está activo y hay menos de 10 naves
+            var navesActuales = document.querySelectorAll('.naves-enemigas').length;
+            if (window.KICKASSGAME && window.KICKASSGAME.sessionManager && window.KICKASSGAME.sessionManager.isPlaying && navesActuales < 10) {
                 var img = document.createElement('img');
                 img.src = 'naves.png'; // Ruta absoluta corregida
                 img.className = 'naves-enemigas';
@@ -334,7 +353,7 @@
                 img.style.left = Math.random() * (window.innerWidth - 100) + 'px';
                 img.style.top = Math.random() * (window.innerHeight - 100) + 'px';
                 img.style.width = '80px';
-                img.style.zIndex = '900';
+                img.style.zIndex = '20000'; // Valor muy alto para estar sobre el texto
                 img.style.pointerEvents = 'auto'; // Habilitado para que las balas (elementFromPoint) puedan chocar
                 document.body.appendChild(img);
 

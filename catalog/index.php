@@ -1,9 +1,27 @@
 <?php
 require_once '../config.php';
 
-// Obtener programas
+// Cargar categorias para el filtro flotante
+$categorias = [];
+$catRes = $conn->query("SELECT * FROM categorias ORDER BY nombre ASC");
+if ($catRes && $catRes->num_rows > 0) {
+    while ($c = $catRes->fetch_assoc()) {
+        $categorias[] = $c;
+    }
+}
+
+// Determinar el filtro actual
+$filtro_slug = isset($_GET['cat']) ? $conn->real_escape_string($_GET['cat']) : '';
+
+// Construir consulta de programas
+$sql_progs = "SELECT p.*, c.nombre as categoria_nombre FROM programas p LEFT JOIN categorias c ON p.categoria_id = c.id";
+if ($filtro_slug !== '') {
+    $sql_progs .= " WHERE c.slug = '$filtro_slug'";
+}
+$sql_progs .= " ORDER BY p.id DESC";
+
 $programas = [];
-$res = $conn->query("SELECT * FROM programas ORDER BY id DESC");
+$res = $conn->query($sql_progs);
 if ($res) {
     while ($row = $res->fetch_assoc()) {
         $programas[] = $row;
@@ -72,27 +90,88 @@ if ($res) {
             margin: 0 0 10px 0;
         }
 
-        .filters {
+        /* Floating Filters CSS */
+        .floating-filter-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #ff8c00;
+            color: #111;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255,140,0,0.4);
             display: flex;
-            gap: 15px;
+            align-items: center;
             justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 50px;
+            z-index: 1000;
+            transition: 0.3s transform;
         }
-
+        .floating-filter-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .floating-filter-panel {
+            position: fixed;
+            bottom: 30px;
+            left: -400px; /* Oculto por defecto en la esquina izquierda */
+            width: 300px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            z-index: 999;
+            transition: 0.4s left cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+        }
+        .floating-filter-panel.active {
+            left: 30px;
+        }
+        .floating-filter-panel h4 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .floating-filter-panel .close-panel-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+        .floating-filter-panel .close-panel-btn:hover {
+            color: #ff8c00;
+        }
+        .floating-filter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
         .filter-btn {
             background: var(--card-bg-hover);
             border: 1px solid var(--card-border);
             color: var(--text-color);
-            padding: 10px 25px;
-            border-radius: 50px;
+            padding: 10px 20px;
+            border-radius: 10px;
             cursor: pointer;
             transition: 0.3s;
             font-size: 0.95rem;
+            text-decoration: none;
+            text-align: left;
         }
-
-        .filter-btn:hover,
-        .filter-btn.active {
+        .filter-btn:hover, .filter-btn.active {
             background: #ff8c00;
             color: black;
             border-color: #ff8c00;
@@ -183,14 +262,18 @@ if ($res) {
                 padding: 0 10px;
             }
 
-            .filter-btn {
-                padding: 8px 18px;
-                font-size: 0.85rem;
+            .floating-filter-panel {
+                bottom: 100px; /* Encima del boton movil hipotetico si existe, o justo arriba del boton flotante */
+                left: -120%; /* Oculto fuera de pantalla con margen de seguridad */
+                width: calc(100% - 40px);
+                max-width: 320px;
             }
-
-            .filters {
-                gap: 10px;
-                margin-bottom: 35px;
+            .floating-filter-panel.active {
+                left: 20px;
+            }
+            .floating-filter-btn {
+                bottom: 20px;
+                right: 20px;
             }
 
             .catalog-grid {
@@ -256,14 +339,7 @@ if ($res) {
                 mejores herramientas y programas para optimizar tu flujo de trabajo.</p>
         </div>
 
-        <div class="filters">
-            <button class="filter-btn active">Todas</button>
-            <button class="filter-btn">Lorem</button>
-            <button class="filter-btn">Ipsum</button>
-            <button class="filter-btn">Dolor</button>
-            <button class="filter-btn">Sit</button>
-            <button class="filter-btn">Amet</button>
-        </div>
+
 
         <div class="catalog-grid">
             <?php if (empty($programas)): ?>
@@ -317,6 +393,62 @@ if ($res) {
     <div style="padding: 0 20px 40px 20px;">
         <?php include '../footer.php'; ?>
     </div>
+
+    <!-- Panel Flotante de Filtros -->
+    <div class="floating-filter-panel" id="floatingFilterPanel">
+        <h4>
+            <span>Filtrar Catálogo</span>
+            <button class="close-panel-btn" id="closeFilterPanelBtn">&times;</button>
+        </h4>
+        <div class="floating-filter-list">
+            <!-- Etiqueta Todo -->
+            <a href="?" class="filter-btn <?= ($filtro_slug === '') ? 'active' : '' ?>">Ver Todos</a>
+            
+            <!-- Resto de Categorias Dinámicas -->
+            <?php foreach($categorias as $cat): ?>
+                <a href="?cat=<?= htmlspecialchars($cat['slug']) ?>" class="filter-btn <?= ($filtro_slug === $cat['slug']) ? 'active' : '' ?>">
+                    <?= htmlspecialchars($cat['nombre']) ?>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <!-- Botón Flotante para abrir Filtros -->
+    <button class="floating-filter-btn" id="filterToggleBtn" aria-label="Abrir Filtros" title="Filtrar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Funnel (Filter) -->
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            <!-- Plus Indicator (simulando funnel-plus) -->
+            <g stroke-width="3" stroke="currentColor">
+                <line x1="20" y1="18" x2="20" y2="24"></line>
+                <line x1="17" y1="21" x2="23" y2="21"></line>
+            </g>
+        </svg>
+    </button>
+
+    <script>
+        // Lógica del botón flotante
+        const filterBtn = document.getElementById('filterToggleBtn');
+        const filterPanel = document.getElementById('floatingFilterPanel');
+        const closePanelBtn = document.getElementById('closeFilterPanelBtn');
+
+        filterBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            filterPanel.classList.toggle('active');
+        });
+
+        closePanelBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            filterPanel.classList.remove('active');
+        });
+
+        // Cerrar panel al hacer clic fuera en cualquier lado de la pantalla
+        document.addEventListener('click', (event) => {
+            if (!filterPanel.contains(event.target) && filterPanel.classList.contains('active')) {
+                filterPanel.classList.remove('active');
+            }
+        });
+    </script>
 
 </body>
 

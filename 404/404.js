@@ -167,7 +167,7 @@
         keydown: function (e) {
             var c = code(e.keyCode); this.keyMap[c] = true; 
             if (['left', 'right', 'up', 'down', 'esc', ' '].indexOf(c) !== -1) stopEvent(e);
-            if (c === 'esc') this.destroy();
+            // El juego ya no se destruye con Esc como solicitó el usuario
         }, 
         keyup: function (e) { var c = code(e.keyCode); this.keyMap[c] = false; }, 
         loop: function () {
@@ -219,7 +219,6 @@
             this.container.innerHTML = '<div id="kickass-pointstab" class="KICKASSELEMENT">' +
                 '<div id="kickass-pointstab-wrapper" class="KICKASSELEMENT">' + 
                 '<div id="kickass-points" class="KICKASSELEMENT">' + this.numPoints + '</div>' + 
-                '<div id="kickass-esctoquit" class="KICKASSELEMENT">Presiona Esc para salir</div>' +
                 '</div></div>';
             this.points = document.getElementById('kickass-points'); 
             this.game.registerElement(this.container);
@@ -322,7 +321,13 @@
         update: function (tdelta) { this.removeOld(); Cannon.prototype.update.call(this, tdelta); }, 
         removeOld: function () { var time = now(); for (var i = 0; i < this.bullets.length; i++) { if (time - this.bullets[i].bornAt > 2000) { this.bullets[i].destroy(); this.bullets.splice(i, 1); i--; } } }, 
         checkCollisions: function (tdelta) { for (var i = 0; i < this.bullets.length; i++) { var b = this.bullets[i]; b.update(tdelta); if (this.checkCollision(b)) { b.destroy(); this.bullets.splice(i, 1); i--; } } }, 
-        shootPressed: function () { if (now() - this.lastFired < 150) return; this.lastFired = now(); var b = this.createBullet(Bullet); this.bullets.push(b); },
+        shootPressed: function () { 
+            if (now() - this.lastFired < 150) return; 
+            if (this.bullets.length >= 10) return; // Limitar a 10 cohetes en pantalla
+            this.lastFired = now(); 
+            var b = this.createBullet(Bullet); 
+            this.bullets.push(b); 
+        },
         shootReleased: function () {},
         destroy: function () { for (var i = 0; i < this.bullets.length; i++) this.bullets[i].destroy(); this.bullets = []; }
     });
@@ -452,10 +457,10 @@
         document.body.appendChild(container);
         
         var controls = [
-            { id: 'm-left', key: 'left', icon: '←', side: 'left' },
-            { id: 'm-right', key: 'right', icon: '→', side: 'left' },
-            { id: 'm-up', key: 'up', icon: '🚀', side: 'right' },
-            { id: 'm-fire', key: ' ', icon: '🔫', side: 'right' }
+            { id: 'm-left', key: 'left', icon: '<i data-lucide="chevron-left"></i>', side: 'left' },
+            { id: 'm-right', key: 'right', icon: '<i data-lucide="chevron-right"></i>', side: 'left' },
+            { id: 'm-up', key: 'up', icon: '<i data-lucide="move-up"></i>', side: 'right' },
+            { id: 'm-fire', key: ' ', icon: '<i data-lucide="flame"></i>', side: 'right' }
         ];
         
         controls.forEach(function(ctrl) {
@@ -472,6 +477,11 @@
             btn.addEventListener('touchend', end);
             btn.addEventListener('touchcancel', end);
         });
+
+        // Inicializar iconos de Lucide
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
     }
 
     initKickAss();

@@ -113,7 +113,7 @@
                     $bgStyle = $hasImg ? "background:url(&quot;{$imgAbs}&quot;) center/cover no-repeat;" : "background:var(--carousel-bg); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.3); font-size:2rem; font-weight:800;";
                     $innerContent = $hasImg ? "" : "???";
 
-                    if ($p['id']) {
+                    if ($p['id'] !== null) {
                         $f = date('d/m/Y', strtotime($p['fecha_creacion']));
                         $fUrl = "programa/lista/{$f}/{$p['slug']}";
                         $btn = "<a href='{$fUrl}' class='btn-orange btn-outline' style='padding:10px 20px; font-size:0.9rem; text-wrap:nowrap;'>Ver programa</a>";

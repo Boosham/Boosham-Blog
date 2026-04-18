@@ -158,13 +158,21 @@ $id = $row['id'];
             background: #2563eb;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+        }        /* Masonry Perfecto en PHP */
+        .masonry-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 25px;
+            width: 100%;
+            margin-bottom: 25px;
         }
 
-        /* Grid Glassmorphism para Categorías */
-        .grid-sections {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        .masonry-col {
+            display: flex;
+            flex-direction: column;
             gap: 25px;
+            flex: 1;
+            min-width: 0;
         }
 
         .section-card {
@@ -175,7 +183,14 @@ $id = $row['id'];
             border-radius: 15px;
             padding: 25px;
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            box-sizing: border-box;
         }
+
+        .section-card.full-width-card {
+            margin-bottom: 25px;
+        }
+
 
         .section-card:hover {
             background: rgba(255, 255, 255, 0.06);
@@ -200,6 +215,9 @@ $id = $row['id'];
             margin: 0;
             white-space: pre-line;
             /* Para respetar saltos de linea de la DB */
+            overflow-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
         }
 
         @media (max-width: 768px) {
@@ -268,6 +286,25 @@ $id = $row['id'];
         .btn-download-final:hover {
             transform: translateY(-3px) scale(1.04);
             box-shadow: 0 8px 35px rgba(255, 140, 0, 0.6);
+        }
+
+        .btn-info-extra {
+            display: inline-block;
+            background: transparent;
+            color: var(--text-color);
+            border: 2px solid var(--orange-btn);
+            padding: 15px 45px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        .btn-info-extra:hover {
+            background: rgba(255, 140, 0, 0.1);
+            transform: translateY(-2px);
         }
 
         /* Footer wrapper */
@@ -628,9 +665,9 @@ $id = $row['id'];
                 justify-content: center !important;
             }
 
-            /* Grid Sections */
-            .grid-sections {
-                grid-template-columns: 1fr;
+            /* Masonry Rows responsivas */
+            .masonry-row {
+                flex-direction: column;
             }
 
             .section-card {
@@ -775,51 +812,96 @@ $id = $row['id'];
         </div>
 
 
-        <div class="grid-sections">
-            <div class="section-card">
-                <h2>Características Principales</h2>
-                <p><?= htmlspecialchars(!empty($row['caracteristicas']) ? $row['caracteristicas'] : "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.") ?>
-                </p>
-            </div>
-            <div class="section-card">
-                <h2>Novedades</h2>
-                <p><?= htmlspecialchars(!empty($row['novedades']) ? $row['novedades'] : "Se han integrado mejoras de rendimiento globales (Lorem Ipsum) y corrección de pequeños bugs.") ?>
-                </p>
-            </div>
-            <div class="section-card">
-                <h2>Requisitos del Sistema</h2>
-                <p><?= htmlspecialchars(!empty($row['requisitos']) ? $row['requisitos'] : "Sistema Operativo: Windows 10/11\nProcesador: Múltiples Núcleos\nRAM: Min. 4GB") ?>
-                </p>
-            </div>
-            <div class="section-card">
-                <h2>Público Objetivo</h2>
-                <p><?= htmlspecialchars(!empty($row['publico_objetivo']) ? $row['publico_objetivo'] : "Orientado a profesionales de la industria, estudiantes y entusiastas (Placeholder Lorem Ipsum).") ?>
-                </p>
-            </div>
-            <div class="section-card">
-                <h2>Información del Archivo</h2>
-                <p><?= htmlspecialchars(!empty($row['info_archivo']) ? $row['info_archivo'] : "Nombre: app_installer.exe\nPeso Aprox: 120MB\nLicencia: Gratuita") ?>
-                </p>
-            </div>
-            <div class="section-card">
-                <h2>Instrucciones de Instalación</h2>
-                <p><?= htmlspecialchars(!empty($row['instrucciones']) ? $row['instrucciones'] : "1. Proceda a descargar.\n2. Ejecute Install.exe como administrador.\n3. Disfrute.") ?>
-                </p>
-            </div>
-            <div class="section-card">
-                <h2>Aviso Legal / Disclaimer</h2>
-                <p><?= htmlspecialchars(!empty($row['aviso_legal']) ? $row['aviso_legal'] : "El uso de esta copia de prueba es responsabilidad entera del consumidor final.") ?>
-                </p>
-            </div>
+        <div class="sections-container">
+            <?php
+            $sections = [
+                ['title' => 'Características Principales', 'key' => 'caracteristicas', 'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'],
+                ['title' => 'Novedades', 'key' => 'novedades', 'default' => 'Se han integrado mejoras de rendimiento globales y corrección de pequeños bugs.'],
+                ['title' => 'Requisitos del Sistema', 'key' => 'requisitos', 'default' => "Sistema Operativo: Windows 10/11\nProcesador: Múltiples Núcleos\nRAM: Min. 4GB"],
+                ['title' => 'Público Objetivo', 'key' => 'publico_objetivo', 'default' => 'Orientado a profesionales de la industria, estudiantes y entusiastas (Placeholder Lorem Ipsum).'],
+                ['title' => 'Información del Archivo', 'key' => 'info_archivo', 'default' => "Nombre: app_installer.exe\nPeso Aprox: 120MB\nLicencia: Gratuita"],
+                ['title' => 'Instrucciones de Instalación', 'key' => 'instrucciones', 'default' => "1. Proceda a descargar.\n2. Ejecute Install.exe como administrador.\n3. Disfrute."],
+                ['title' => 'Aviso Legal / Disclaimer', 'key' => 'aviso_legal', 'default' => 'El uso de esta copia de prueba es responsabilidad entera del consumidor final.']
+            ];
 
+            function isLargeContent($text) {
+                if (strlen($text) > 800) return true;
+                $words = preg_split('/\s+/', $text);
+                foreach ($words as $w) {
+                    if (strlen($w) > 60) return true;
+                }
+                return false;
+            }
+
+            function flushMasonryRow(&$smallItemsGroup) {
+                if (empty($smallItemsGroup)) return;
+                
+                // Distribuimos los items pequeños almacenados en 3 columnas virtuales
+                $cols = [0 => [], 1 => [], 2 => []];
+                $colLengths = [0 => 0, 1 => 0, 2 => 0];
+
+                foreach ($smallItemsGroup as $item) {
+                    $minCol = array_keys($colLengths, min($colLengths))[0];
+                    $cols[$minCol][] = $item;
+                    $colLengths[$minCol] += strlen($item['title']) + strlen($item['content']) + 100;
+                }
+
+                echo '<div class="masonry-row">';
+                foreach ($cols as $colItems) {
+                    if (empty($colItems)) continue; // Si la columna está vacía (p.ej. pocos elementos), no se renderiza, evitando huecos.
+                    echo '<div class="masonry-col">';
+                    foreach ($colItems as $item) {
+                        echo "<div class=\"section-card\">";
+                        echo "    <h2>" . htmlspecialchars($item['title']) . "</h2>";
+                        echo "    <p>" . htmlspecialchars($item['content']) . "</p>";
+                        echo "</div>";
+                    }
+                    echo '</div>';
+                }
+                echo '</div>';
+                
+                // Limpiamos el grupo para el siguiente ciclo
+                $smallItemsGroup = [];
+            }
+
+            $currentSmallItems = [];
+
+            foreach ($sections as $sec) {
+                $content = !empty($row[$sec['key']]) ? $row[$sec['key']] : $sec['default'];
+                $item = ['title' => $sec['title'], 'content' => $content];
+                
+                if (isLargeContent($content)) {
+                    // Descargamos el buffer de elementos cortos antes de renderizar el gigante
+                    flushMasonryRow($currentSmallItems);
+                    
+                    // Renderizamos el elemento gigante independientemente
+                    echo "<div class=\"section-card full-width-card\">";
+                    echo "    <h2>" . htmlspecialchars($item['title']) . "</h2>";
+                    echo "    <p>" . htmlspecialchars($item['content']) . "</p>";
+                    echo "</div>";
+                } else {
+                    $currentSmallItems[] = $item;
+                }
+            }
+
+            // Descargamos cualquier elemento corto restante al final del loop
+            flushMasonryRow($currentSmallItems);
+            ?>
         </div>
 
         <!-- CTA de descarga centrado al final -->
         <div class="download-cta">
             <h2>¿Listo para descargar?</h2>
             <p>Descarga <?= htmlspecialchars($row['titulo'] ?? 'este programa') ?> de forma segura y gratuita.</p>
-            <a href="<?= htmlspecialchars($row['link_descarga'] ?? '#') ?>" target="_blank" class="btn-download-final">⬇
-                Descargar Software</a>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:15px;">
+                <a href="<?= htmlspecialchars($row['link_descarga'] ?? '#') ?>" target="_blank" class="btn-download-final">⬇ Descargar Software</a>
+                <?php if(isset($row['tiene_info_extra']) && $row['tiene_info_extra'] == 1): ?>
+                    <a href="/programa/info.php?slug=<?= htmlspecialchars($row['slug']) ?>" class="btn-info-extra" style="display:flex; align-items:center; gap:8px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        Info Extra
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
 
         <!-- Guía de emojis/reacciones para votar -->
@@ -939,12 +1021,20 @@ $id = $row['id'];
             console.log('Giscus Event Data:', event.data);
 
             if (event.data && event.data.giscus) {
+                const idPrograma = <?= $id ?>;
+                // Detección automática de la raíz del proyecto para compatibilidad local/servidor
+                const pathParts = window.location.pathname.split('/programa/')[0];
+                const base = pathParts.endsWith('/') ? pathParts : pathParts + '/';
+
                 // SVG Lucide Star
                 const starSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
                 const filledStarSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
-                // Si no hay discusión todavía, muestra el estado neutro en el panel
+
+                // Si no hay discusión todavía, muestra el estado neutro y sincroniza 0 en la BD
                 if (event.data.giscus.error === 'Discussion not found' || !event.data.giscus.discussion) {
-                    renderSummaryPanel(null, 0, {});
+                    renderSummaryPanel(null, 0, {}, true); // true fuerza la limpieza del hero
+                    fetch(base + 'api/actualizar_cache.php?id=' + idPrograma + '&estrellas=0')
+                        .catch(err => console.error('Error limpiando caché (Disc. not found):', err));
                     return;
                 }
 
@@ -961,7 +1051,7 @@ $id = $row['id'];
                 }
 
                 // ---- helper: render rating summary panel ----
-                function renderSummaryPanel(avg, votes, reactionCounts) {
+                function renderSummaryPanel(avg, votes, reactionCounts, forceHeroClear = false) {
                     const avgEl = document.getElementById('summary-avg');
                     const starsEl = document.getElementById('summary-stars');
                     const votesEl = document.getElementById('summary-votes');
@@ -975,7 +1065,8 @@ $id = $row['id'];
                         bdEl.innerHTML = '<span style="font-size:0.85rem;color:var(--text-muted);">Sé el primero en calificar. Usa las reacciones de abajo ↓</span>';
 
                         const heroContainer = document.getElementById('hero-rating-container');
-                        if (heroContainer) {
+                        // Solo sobreescribir si se fuerza (fin de carga real) o si no tiene estrellas pintadas por PHP
+                        if (heroContainer && (forceHeroClear || !heroContainer.querySelector('div') || heroContainer.querySelector('#hero-rating-empty'))) {
                             heroContainer.innerHTML = `<span id="hero-rating-empty" style='color:var(--text-muted); font-size:0.95rem; opacity:0.8;'>Aún no hay reseñas</span>`;
                         }
                         return;
@@ -1043,22 +1134,29 @@ $id = $row['id'];
                     reactionCounts[key] = obj.count || 0;
                 }
 
-                const idPrograma = <?= $id ?>;
-
                 // Actualizar conteo de comentarios en BD si está disponible
                 if (event.data.giscus.discussion && event.data.giscus.discussion.totalCommentCount !== undefined) {
                     const totalComments = event.data.giscus.discussion.totalCommentCount;
-                    fetch('/programa/guardar_comentarios.php?id=' + idPrograma + '&conteo=' + totalComments);
+                    fetch(base + 'programa/guardar_comentarios.php?id=' + idPrograma + '&conteo=' + totalComments)
+                        .catch(err => console.error('Error guardando conteo:', err));
                 }
 
                 if (votes > 0) {
                     const avg = (points / votes).toFixed(1);
+                    // Actualizar UI (Arriba y abajo)
                     renderSummaryPanel(avg, votes, reactionCounts);
 
-                    // Cache de estrellas al servidor
-                    fetch('/admin/actualizar_cache.php?id=' + idPrograma + '&estrellas=' + avg);
+                    // Cache de estrellas al servidor (Sincronización DB)
+                    fetch(base + 'api/actualizar_cache.php?id=' + idPrograma + '&estrellas=' + avg)
+                        .then(r => r.json())
+                        .then(data => console.log('DB Sync:', data))
+                        .catch(err => console.error('Error sincronizando estrellas:', err));
                 } else {
-                    renderSummaryPanel(null, 0, {});
+                    // Si confirmamos que realmente hay 0 votos tras cargar Giscus, podemos mostrar el estado vacío
+                    renderSummaryPanel(null, 0, {}, true); 
+                    // Sincronizar el estado vacío a la base de datos para limpiar el caché
+                    fetch(base + 'api/actualizar_cache.php?id=' + idPrograma + '&estrellas=0')
+                        .catch(err => console.error('Error limpiando caché:', err));
                 }
             }
         });

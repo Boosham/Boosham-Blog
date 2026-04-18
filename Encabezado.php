@@ -15,11 +15,18 @@ $encabezado_base = '/';
             <div class="nav-dropdown">
                 <a href="<?= $encabezado_base ?>catalog/" class="nav-dropdown-toggle">Programas</a>
                 <div class="nav-dropdown-menu">
-                    <a href="<?= $encabezado_base ?>catalog/">Lorem Ipsum</a>
-                    <a href="<?= $encabezado_base ?>catalog/">Dolor Sit Amet</a>
-                    <a href="<?= $encabezado_base ?>catalog/">Consectetur</a>
-                    <a href="<?= $encabezado_base ?>catalog/">Adipiscing Elit</a>
-                    <a href="<?= $encabezado_base ?>catalog/">Sed Do Eiusmod</a>
+                    <a href="<?= $encabezado_base ?>catalog/">Ver Todos</a>
+                    <?php 
+                    // Renderizamos las categorias dinamicamente si la conexion existe
+                    if(isset($conn)) {
+                        $nav_cat_query = $conn->query("SELECT nombre, slug FROM categorias ORDER BY nombre ASC");
+                        if($nav_cat_query && $nav_cat_query->num_rows > 0) {
+                            while($nav_cat = $nav_cat_query->fetch_assoc()) {
+                                echo '<a href="' . $encabezado_base . 'catalog/?cat=' . htmlspecialchars($nav_cat['slug']) . '">' . htmlspecialchars($nav_cat['nombre']) . '</a>';
+                            }
+                        }
+                    }
+                    ?>
                 </div>
             </div>
             <a href="#">DMCA</a>
