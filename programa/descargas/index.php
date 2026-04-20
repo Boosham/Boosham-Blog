@@ -1,16 +1,16 @@
 <?php
-require_once '../config.php';
-require_once '../lib/Parsedown.php';
+require_once '../../config.php';
+require_once '../../lib/Parsedown.php';
 
 $slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
 $row = null;
 
 if (isset($conn) && $slug !== '') {
     $stmt = $conn->prepare("
-        SELECT p.titulo, i.html_content 
+        SELECT p.titulo, d.html_content 
         FROM programas p 
-        INNER JOIN info_programa i ON p.id = i.programa_id 
-        WHERE p.slug = ? AND p.tiene_info_extra = 1
+        INNER JOIN descargas_programa d ON p.id = d.programa_id 
+        WHERE p.slug = ? AND p.tiene_descargas = 1
     ");
     if ($stmt) {
         $stmt->bind_param("s", $slug);
@@ -23,15 +23,15 @@ if (isset($conn) && $slug !== '') {
 
 if (empty($row)) {
     http_response_code(404);
-    require_once '../404/404.php';
+    require_once '../../404/404.php';
     exit;
 }
 
 // Renderizar Markdown a HTML usando Parsedown
 $Parsedown = new Parsedown();
 $Parsedown->setSafeMode(false); // Permitir HTML embebido (botones, picture, etc.)
-$Parsedown->setBreaksEnabled(true); // Manejo de saltos de línea natural
-$Parsedown->setUrlsLinked(true); // Autolink URLs
+$Parsedown->setBreaksEnabled(true); 
+$Parsedown->setUrlsLinked(true);
 $renderedHtml = $Parsedown->text($row['html_content']);
 ?>
 <!DOCTYPE html>
@@ -40,7 +40,7 @@ $renderedHtml = $Parsedown->text($row['html_content']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Info Extra: <?= htmlspecialchars($row['titulo']) ?></title>
+    <title>Descargas: <?= htmlspecialchars($row['titulo']) ?></title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -93,14 +93,12 @@ $renderedHtml = $Parsedown->text($row['html_content']);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
         }
 
-        /* Markdown Overrides & Theme Compatibility */
         .markdown-body {
             background: transparent !important;
             color: inherit !important;
             font-size: 16px;
         }
 
-        /* Asegurar que las negritas funcionen y se vean fuertes */
         .markdown-body strong, .markdown-body b {
             font-weight: 700 !important;
             color: inherit !important;
@@ -115,12 +113,7 @@ $renderedHtml = $Parsedown->text($row['html_content']);
             color: #0969da !important;
         }
 
-        /* Tablas y Code Blocks responsivos al tema */
-        .markdown-body table tr, .markdown-body pre, .markdown-body code {
-            transition: background 0.3s, border-color 0.3s, color 0.3s;
-        }
-
-        /* Forzar modo oscuro por defecto en tablas */
+        /* Tablas y Code Blocks */
         .markdown-body table tr {
             background-color: #0d1117 !important;
             border-top: 1px solid #3d444d !important;
@@ -134,7 +127,6 @@ $renderedHtml = $Parsedown->text($row['html_content']);
             border: 1px solid #3d444d !important;
         }
 
-        /* Modo claro en tablas */
         [data-theme="light"] .markdown-body table tr {
             background-color: #fff !important;
             border-top-color: #d1d9e0 !important;
@@ -142,10 +134,6 @@ $renderedHtml = $Parsedown->text($row['html_content']);
         }
         [data-theme="light"] .markdown-body table tr:nth-child(2n) {
             background-color: #f6f8fa !important;
-        }
-        [data-theme="light"] .markdown-body table th, 
-        [data-theme="light"] .markdown-body table td {
-            border-color: #d1d9e0 !important;
         }
 
         /* Code blocks */
@@ -162,39 +150,11 @@ $renderedHtml = $Parsedown->text($row['html_content']);
             color: #e6edf3 !important;
             padding: 0.2em 0.4em;
             border-radius: 6px;
-            font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
-        }
-        .markdown-body pre code {
-            background-color: transparent !important;
-            padding: 0;
-            border: none;
         }
         
         [data-theme="light"] .markdown-body pre {
             background-color: #f6f8fa !important;
             color: #1f2328 !important;
-            border-color: #d1d9e0 !important;
-        }
-        [data-theme="light"] .markdown-body code {
-            background-color: rgba(175, 184, 193, 0.2) !important;
-            color: #1f2328 !important;
-        }
-        [data-theme="light"] .markdown-body pre code {
-            color: inherit !important;
-        }
-
-        /* Fix para iconos <picture> de Iconify */
-        /* Si el sitio está en LIGHT pero el sistema prefiere DARK, invertimos los iconos blancos */
-        @media (prefers-color-scheme: dark) {
-            [data-theme="light"] .markdown-body picture img {
-                filter: invert(1) brightness(0.2) !important; 
-            }
-        }
-        /* Si el sitio está en DARK pero el sistema prefiere LIGHT, invertimos los iconos negros */
-        @media (prefers-color-scheme: light) {
-            html:not([data-theme="light"]) .markdown-body picture img {
-                filter: invert(1) brightness(2) !important;
-            }
         }
 
         .markdown-body h1, .markdown-body h2 {
@@ -205,6 +165,18 @@ $renderedHtml = $Parsedown->text($row['html_content']);
         [data-theme="light"] .markdown-body h2 {
             border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
         }
+
+        /* Centrado de titulo de pagina */
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-color);
+            margin: 0;
+        }
     </style>
 </head>
 
@@ -212,9 +184,14 @@ $renderedHtml = $Parsedown->text($row['html_content']);
 
     <canvas id="dotsCanvas"></canvas>
 
-    <?php include '../Encabezado.php'; ?>
+    <?php include '../../Encabezado.php'; ?>
 
     <div class="container">
+        <div class="page-header">
+            <h1>Descargar <?= htmlspecialchars($row['titulo']) ?></h1>
+            <p style="opacity: 0.7; margin-top: 10px;">Selecciona uno de los métodos de descarga a continuación.</p>
+        </div>
+
         <div class="info-extra-content">
             <article class="markdown-body">
                 <?= $renderedHtml ?>
@@ -222,12 +199,11 @@ $renderedHtml = $Parsedown->text($row['html_content']);
         </div>
     </div>
 
-    <div class="footer-wrapper">
-        <?php include '../footer.php'; ?>
+    <div class="footer-wrapper" style="position: relative; z-index: 2; padding-top: 60px;">
+        <?php include '../../footer.php'; ?>
     </div>
 
     <script>
-        // Dots animation matching main site
         const canvas = document.getElementById('dotsCanvas');
         const ctx = canvas.getContext('2d');
         let points = [];

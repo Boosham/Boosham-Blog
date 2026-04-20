@@ -13,12 +13,40 @@ if ($catRes && $catRes->num_rows > 0) {
 // Determinar el filtro actual
 $filtro_slug = isset($_GET['cat']) ? $conn->real_escape_string($_GET['cat']) : '';
 
+// Lógica Global de Insignias (Nuevo/Tendencia)
+$resNuevos = $conn->query("SELECT id FROM programas ORDER BY fecha_creacion DESC LIMIT 5");
+$ids_nuevos = [];
+if ($resNuevos) { while ($r = $resNuevos->fetch_assoc()) { $ids_nuevos[] = $r['id']; } }
+
+$resTendencia = $conn->query("SELECT id FROM programas ORDER BY clicks DESC LIMIT 5");
+$ids_tendencia = [];
+if ($resTendencia) { while ($r = $resTendencia->fetch_assoc()) { $ids_tendencia[] = $r['id']; } }
+
+function getBadgeHtml($id, $ids_nuevos, $ids_tendencia) {
+    if (in_array($id, $ids_tendencia)) {
+        return '<div style="position:absolute; top:-10px; right:-10px; background:#f97316; color:white; font-size:0.75rem; font-weight:800; padding:5px 12px; border-radius:30px; box-shadow:0 4px 15px rgba(249,115,22,0.4); display:flex; align-items:center; gap:6px; z-index:10;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg> Tendencia</div>';
+    }
+    if (in_array($id, $ids_nuevos)) {
+        return '<div style="position:absolute; top:-10px; right:-10px; background:#10b981; color:white; font-size:0.75rem; font-weight:800; padding:5px 12px; border-radius:30px; box-shadow:0 4px 15px rgba(16,185,129,0.4); display:flex; align-items:center; gap:6px; z-index:10;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"></path><path d="m21 12-4.46 2.87.69 5.12-4.9-1.39-2.8 4.38-2.8-4.38-4.9 1.39.69-5.12L2 12l4.46-2.87-.69-5.12 4.9 1.39 2.8-4.38 2.8 4.38 4.9-1.39-.69 5.12Z"></path></svg> Nuevo</div>';
+    }
+    return '';
+}
+
 // Construir consulta de programas
 $sql_progs = "SELECT p.*, c.nombre as categoria_nombre FROM programas p LEFT JOIN categorias c ON p.categoria_id = c.id";
 if ($filtro_slug !== '') {
     $sql_progs .= " WHERE c.slug = '$filtro_slug'";
 }
-$sql_progs .= " ORDER BY p.id DESC";
+
+if (isset($_GET['t'])) {
+    if ($_GET['t'] === 'tendencia') {
+        $sql_progs .= " ORDER BY p.clicks DESC LIMIT 15";
+    } elseif ($_GET['t'] === 'nuevo') {
+        $sql_progs .= " ORDER BY p.fecha_creacion DESC LIMIT 15";
+    }
+} else {
+    $sql_progs .= " ORDER BY p.id DESC";
+}
 
 $programas = [];
 $res = $conn->query($sql_progs);
@@ -197,6 +225,7 @@ if ($res) {
             transition: transform 0.3s, border-color 0.3s;
             aspect-ratio: 1 / 1;
             box-shadow: var(--card-shadow);
+            position: relative;
         }
 
         .program-card:hover {
@@ -372,8 +401,10 @@ if ($res) {
                     }
                     $f = date('d/m/Y', strtotime($p['fecha_creacion']));
                     $fUrl = "../programa/lista/{$f}/{$p['slug']}";
+                    $badgeHtml = getBadgeHtml($p['id'], $ids_nuevos, $ids_tendencia);
                     ?>
                     <a href="<?= $fUrl ?>" class="program-card">
+                        <?= $badgeHtml ?>
                         <?php if (!empty($p['imagen_url'])): ?>
                             <img src="<?= htmlspecialchars(str_replace('../', '/', $p['imagen_url'])) ?>" alt="Icono" class="program-icon">
                         <?php else: ?>
@@ -402,8 +433,22 @@ if ($res) {
         </h4>
         <div class="floating-filter-list">
             <!-- Etiqueta Todo -->
-            <a href="?" class="filter-btn <?= ($filtro_slug === '') ? 'active' : '' ?>">Ver Todos</a>
+            <a href="?" class="filter-btn <?= ($filtro_slug === '' && !isset($_GET['t'])) ? 'active' : '' ?>">Ver Todos</a>
             
+            <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 5px 0;"></div>
+            
+            <!-- Tendencias / Nuevos -->
+            <a href="?t=tendencia" class="filter-btn <?= (isset($_GET['t']) && $_GET['t'] === 'tendencia') ? 'active' : '' ?>" style="color:#f97316; display:flex; gap:8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg> 
+                En Tendencia
+            </a>
+            <a href="?t=nuevo" class="filter-btn <?= (isset($_GET['t']) && $_GET['t'] === 'nuevo') ? 'active' : '' ?>" style="color:#10b981; display:flex; gap:8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"></path><path d="m21 12-4.46 2.87.69 5.12-4.9-1.39-2.8 4.38-2.8-4.38-4.9 1.39.69-5.12L2 12l4.46-2.87-.69-5.12 4.9 1.39 2.8-4.38 2.8 4.38 4.9-1.39-.69 5.12Z"></path></svg>
+                Agregados Recientemente
+            </a>
+
+            <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 5px 0;"></div>
+
             <!-- Resto de Categorias Dinámicas -->
             <?php foreach($categorias as $cat): ?>
                 <a href="?cat=<?= htmlspecialchars($cat['slug']) ?>" class="filter-btn <?= ($filtro_slug === $cat['slug']) ? 'active' : '' ?>">

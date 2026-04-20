@@ -73,39 +73,49 @@
             <?php
             $res = $conn->query("SELECT * FROM programas ORDER BY id DESC LIMIT 10");
             $programas = [];
-            if ($res) {
-                while ($row = $res->fetch_assoc()) {
-                    $programas[] = $row;
+
+            // Lógica Global de Insignias (Nuevo/Tendencia)
+            $resNuevos = $conn->query("SELECT id FROM programas ORDER BY fecha_creacion DESC LIMIT 5");
+            $ids_nuevos = [];
+            if ($resNuevos) { while ($r = $resNuevos->fetch_assoc()) { $ids_nuevos[] = $r['id']; } }
+
+            $resTendencia = $conn->query("SELECT id FROM programas ORDER BY clicks DESC LIMIT 5");
+            $ids_tendencia = [];
+            if ($resTendencia) { while ($r = $resTendencia->fetch_assoc()) { $ids_tendencia[] = $r['id']; } }
+
+            function getBadgeHtml($id, $ids_nuevos, $ids_tendencia) {
+                if (in_array($id, $ids_tendencia)) {
+                    return '<div style="position:absolute; top:-10px; right:-10px; background:#f97316; color:white; font-size:0.75rem; font-weight:800; padding:5px 12px; border-radius:30px; box-shadow:0 4px 15px rgba(249,115,22,0.4); display:flex; align-items:center; gap:6px; z-index:10;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg> Tendencia</div>';
                 }
+                if (in_array($id, $ids_nuevos)) {
+                    return '<div style="position:absolute; top:-10px; right:-10px; background:#10b981; color:white; font-size:0.75rem; font-weight:800; padding:5px 12px; border-radius:30px; box-shadow:0 4px 15px rgba(16,185,129,0.4); display:flex; align-items:center; gap:6px; z-index:10;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"></path><path d="m21 12-4.46 2.87.69 5.12-4.9-1.39-2.8 4.38-2.8-4.38-4.9 1.39.69-5.12L2 12l4.46-2.87-.69-5.12 4.9 1.39 2.8-4.38 2.8 4.38 4.9-1.39-.69 5.12Z"></path></svg> Nuevo</div>';
+                }
+                return '';
             }
 
-            // Fill up to 10 with placeholders
-            $total = count($programas);
-            for ($i = $total; $i < 10; $i++) {
-                $programas[] = [
-                    'id' => null,
-                    'titulo' => 'Próximamente',
-                    'descripcion' => 'Espacio reservado para nuevo software',
-                    'imagen_url' => ''
-                ];
-            }
-
-            // Distribute into 2 columns
+            // Extraer las dos listas separadas
             $col1 = [];
+            $res1 = $conn->query("SELECT * FROM programas ORDER BY clicks DESC LIMIT 5");
+            if ($res1) { while ($row = $res1->fetch_assoc()) { $col1[] = $row; } }
+
             $col2 = [];
-            foreach ($programas as $index => $prog) {
-                if ($index % 2 == 0) {
-                    $col1[] = $prog;
-                } else {
-                    $col2[] = $prog;
-                }
+            $res2 = $conn->query("SELECT * FROM programas ORDER BY fecha_creacion DESC LIMIT 5");
+            if ($res2) { while ($row = $res2->fetch_assoc()) { $col2[] = $row; } }
+
+            // Rellenar con placeholders si hay menos de 5
+            for ($i = count($col1); $i < 5; $i++) {
+                $col1[] = ['id' => null, 'titulo' => 'Próximamente', 'descripcion' => 'Espacio reservado para nuevo software', 'imagen_url' => ''];
+            }
+            for ($i = count($col2); $i < 5; $i++) {
+                $col2[] = ['id' => null, 'titulo' => 'Próximamente', 'descripcion' => 'Espacio reservado para nuevo software', 'imagen_url' => ''];
             }
 
             // Function to render columns
-            function renderColumn($col, $startIndex)
+            function renderColumn($col, $startIndex, $colTitle)
             {
                 $idx = $startIndex;
                 echo '<div class="card-column">';
+                echo "<h3 style='text-align: center; font-size: 1.8rem; margin-top: 0; margin-bottom: 2.5rem; color: var(--text-color); display:flex; align-items:center; justify-content:center; gap:10px;'>{$colTitle}</h3>";
                 foreach ($col as $p) {
                     $hasImg = !empty($p['imagen_url']) && strpos($p['imagen_url'], 'via.placeholder') === false;
                     /* Se corrige el uso de comillas dentro del style para evitar que se rompa el atributo HTML */
@@ -142,8 +152,12 @@
                         $ratingHtml = "<div style='margin-top:10px;'><span style='color:gray; font-size:0.8rem; opacity:0.7;'>Sin calificar aún</span></div>";
                     }
 
+                    global $ids_nuevos, $ids_tendencia;
+                    $badgeHtml = $p['id'] !== null ? getBadgeHtml($p['id'], $ids_nuevos, $ids_tendencia) : '';
+
                     echo "<div class='card' style='--index: {$idx}'>
                             <div class='card__content'>
+                                {$badgeHtml}
                                 <div class='stacking-icon' style='width:140px;height:140px;{$bgStyle}border-radius:20px;border:1px solid var(--card-border);flex-shrink:0;'>{$innerContent}</div>
                                 <div style='margin-left:20px;flex-grow:1;'>
                                     <h3 style='margin:0 0 5px 0;'>" . htmlspecialchars($p['titulo']) . "</h3>
@@ -160,8 +174,8 @@
                 echo '</div>';
             }
 
-            renderColumn($col1, 1);
-            renderColumn($col2, 1);
+            renderColumn($col1, 1, '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#f97316;"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg> Tendencias');
+            renderColumn($col2, 1, '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#10b981;"><path d="m9 12 2 2 4-4"></path><path d="m21 12-4.46 2.87.69 5.12-4.9-1.39-2.8 4.38-2.8-4.38-4.9 1.39.69-5.12L2 12l4.46-2.87-.69-5.12 4.9 1.39 2.8-4.38 2.8 4.38 4.9-1.39-.69 5.12Z"></path></svg> Nuevos');
             ?>
         </div>
         <div style="text-align: center; margin-top: 4rem;">

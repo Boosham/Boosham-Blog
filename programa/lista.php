@@ -1,9 +1,10 @@
 <?php
 require_once '../config.php';
+require_once '../config.php';
 
-$dia = isset($_GET['dia']) ? (int)$_GET['dia'] : 0;
-$mes = isset($_GET['mes']) ? (int)$_GET['mes'] : 0;
-$anio = isset($_GET['anio']) ? (int)$_GET['anio'] : 0;
+$dia = isset($_GET['dia']) ? (int) $_GET['dia'] : 0;
+$mes = isset($_GET['mes']) ? (int) $_GET['mes'] : 0;
+$anio = isset($_GET['anio']) ? (int) $_GET['anio'] : 0;
 $slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
 $row = null;
 $id = 0;
@@ -16,14 +17,35 @@ if (isset($conn) && $dia > 0 && $mes > 0 && $anio > 0 && $slug !== '') {
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
         $stmt->close();
+
+        // Incremento de clicks a prueba de spam
+        if ($row) {
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            if (!isset($_SESSION['viewed_progs'])) {
+                $_SESSION['viewed_progs'] = [];
+            }
+            if (!in_array($row['id'], $_SESSION['viewed_progs'])) {
+                $conn->query("UPDATE programas SET clicks = clicks + 1 WHERE id = " . (int)$row['id']);
+                $_SESSION['viewed_progs'][] = $row['id'];
+            }
+        }
     }
 }
 if (empty($row)) {
+    // Si no hay slug (URL incompleta como /programa/lista/2026/), mostramos el explorador de carpetas
+    if ($slug === '') {
+        require_once 'explorador.php';
+        exit;
+    }
+
     http_response_code(404);
     require_once '../404/404.php';
     exit;
 }
 $id = $row['id'];
+
 
 ?>
 <!DOCTYPE html>
@@ -158,21 +180,14 @@ $id = $row['id'];
             background: #2563eb;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
-        }        /* Masonry Perfecto en PHP */
-        .masonry-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 25px;
-            width: 100%;
-            margin-bottom: 25px;
         }
 
-        .masonry-col {
+        /* Info Sections - Clean Vertical Layout */
+        .sections-container {
             display: flex;
             flex-direction: column;
             gap: 25px;
-            flex: 1;
-            min-width: 0;
+            width: 100%;
         }
 
         .section-card {
@@ -185,10 +200,8 @@ $id = $row['id'];
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
             box-sizing: border-box;
-        }
-
-        .section-card.full-width-card {
-            margin-bottom: 25px;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
 
@@ -665,10 +678,7 @@ $id = $row['id'];
                 justify-content: center !important;
             }
 
-            /* Masonry Rows responsivas */
-            .masonry-row {
-                flex-direction: column;
-            }
+            /* Sections responsivas - no extra rules needed for vertical layout */
 
             .section-card {
                 padding: 20px;
@@ -740,7 +750,8 @@ $id = $row['id'];
                 <div class="hero-details">
                     <h1><?= htmlspecialchars($row['titulo'] ?? 'Sin Título') ?></h1>
                     <p style="margin-bottom: 12px;">
-                        <?= htmlspecialchars($row['descripcion'] ?? 'Sin descripción disponible.') ?></p>
+                        <?= htmlspecialchars($row['descripcion'] ?? 'Sin descripción disponible.') ?>
+                    </p>
                     <div id="hero-rating-container" style="margin-bottom: 25px; min-height: 24px;">
                         <?php
                         $estrellas = isset($row['estrellas_cache']) ? (float) $row['estrellas_cache'] : 0;
@@ -753,7 +764,8 @@ $id = $row['id'];
                                 <div style='position: relative; display: inline-flex; width: 100px; height: 20px;'>
                                     <div
                                         style='display: flex; position: absolute; top:0; left:0; color: gray; opacity: 0.3;'>
-                                        <?= str_repeat($starSvg, 5) ?></div>
+                                        <?= str_repeat($starSvg, 5) ?>
+                                    </div>
                                     <div id="hero-rating-stars-fill"
                                         style='display: flex; position: absolute; top:0; left:0; color: #fbbf24; overflow: hidden; width: <?= $percentage ?>; transition: width 0.5s ease-out;'>
                                         <div style='display:flex; width: 100px;'><?= str_repeat($filledStarSvg, 5) ?></div>
@@ -824,68 +836,13 @@ $id = $row['id'];
                 ['title' => 'Aviso Legal / Disclaimer', 'key' => 'aviso_legal', 'default' => 'El uso de esta copia de prueba es responsabilidad entera del consumidor final.']
             ];
 
-            function isLargeContent($text) {
-                if (strlen($text) > 800) return true;
-                $words = preg_split('/\s+/', $text);
-                foreach ($words as $w) {
-                    if (strlen($w) > 60) return true;
-                }
-                return false;
-            }
-
-            function flushMasonryRow(&$smallItemsGroup) {
-                if (empty($smallItemsGroup)) return;
-                
-                // Distribuimos los items pequeños almacenados en 3 columnas virtuales
-                $cols = [0 => [], 1 => [], 2 => []];
-                $colLengths = [0 => 0, 1 => 0, 2 => 0];
-
-                foreach ($smallItemsGroup as $item) {
-                    $minCol = array_keys($colLengths, min($colLengths))[0];
-                    $cols[$minCol][] = $item;
-                    $colLengths[$minCol] += strlen($item['title']) + strlen($item['content']) + 100;
-                }
-
-                echo '<div class="masonry-row">';
-                foreach ($cols as $colItems) {
-                    if (empty($colItems)) continue; // Si la columna está vacía (p.ej. pocos elementos), no se renderiza, evitando huecos.
-                    echo '<div class="masonry-col">';
-                    foreach ($colItems as $item) {
-                        echo "<div class=\"section-card\">";
-                        echo "    <h2>" . htmlspecialchars($item['title']) . "</h2>";
-                        echo "    <p>" . htmlspecialchars($item['content']) . "</p>";
-                        echo "</div>";
-                    }
-                    echo '</div>';
-                }
-                echo '</div>';
-                
-                // Limpiamos el grupo para el siguiente ciclo
-                $smallItemsGroup = [];
-            }
-
-            $currentSmallItems = [];
-
             foreach ($sections as $sec) {
                 $content = !empty($row[$sec['key']]) ? $row[$sec['key']] : $sec['default'];
-                $item = ['title' => $sec['title'], 'content' => $content];
-                
-                if (isLargeContent($content)) {
-                    // Descargamos el buffer de elementos cortos antes de renderizar el gigante
-                    flushMasonryRow($currentSmallItems);
-                    
-                    // Renderizamos el elemento gigante independientemente
-                    echo "<div class=\"section-card full-width-card\">";
-                    echo "    <h2>" . htmlspecialchars($item['title']) . "</h2>";
-                    echo "    <p>" . htmlspecialchars($item['content']) . "</p>";
-                    echo "</div>";
-                } else {
-                    $currentSmallItems[] = $item;
-                }
+                echo "<div class=\"section-card\">";
+                echo "    <h2>" . htmlspecialchars($sec['title']) . "</h2>";
+                echo "    <p>" . htmlspecialchars($content) . "</p>";
+                echo "</div>";
             }
-
-            // Descargamos cualquier elemento corto restante al final del loop
-            flushMasonryRow($currentSmallItems);
             ?>
         </div>
 
@@ -894,10 +851,21 @@ $id = $row['id'];
             <h2>¿Listo para descargar?</h2>
             <p>Descarga <?= htmlspecialchars($row['titulo'] ?? 'este programa') ?> de forma segura y gratuita.</p>
             <div style="display:flex; flex-direction:column; align-items:center; gap:15px;">
-                <a href="<?= htmlspecialchars($row['link_descarga'] ?? '#') ?>" target="_blank" class="btn-download-final">⬇ Descargar Software</a>
-                <?php if(isset($row['tiene_info_extra']) && $row['tiene_info_extra'] == 1): ?>
-                    <a href="/programa/info.php?slug=<?= htmlspecialchars($row['slug']) ?>" class="btn-info-extra" style="display:flex; align-items:center; gap:8px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <?php if (isset($row['tiene_descargas']) && $row['tiene_descargas'] == 1): ?>
+                    <a href="/programa/descargas/<?= htmlspecialchars($row['slug']) ?>" class="btn-download-final">⬇ Descargar Software</a>
+                <?php else: ?>
+                    <a href="#" class="btn-download-final" style="filter: grayscale(1); cursor:not-allowed;">⬇ No hay links disponibles</a>
+                <?php endif; ?>
+
+                <?php if (isset($row['tiene_info_extra']) && $row['tiene_info_extra'] == 1): ?>
+                    <a href="/programa/info.php?slug=<?= htmlspecialchars($row['slug']) ?>" class="btn-info-extra"
+                        style="display:flex; align-items:center; gap:8px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
                         Info Extra
                     </a>
                 <?php endif; ?>
@@ -1030,11 +998,16 @@ $id = $row['id'];
                 const starSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
                 const filledStarSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
 
-                // Si no hay discusión todavía, muestra el estado neutro y sincroniza 0 en la BD
-                if (event.data.giscus.error === 'Discussion not found' || !event.data.giscus.discussion) {
+                // Si hay un error claro de que no existe la discusión, limpiamos las estrellas
+                if (event.data.giscus.error === 'Discussion not found') {
                     renderSummaryPanel(null, 0, {}, true); // true fuerza la limpieza del hero
                     fetch(base + 'api/actualizar_cache.php?id=' + idPrograma + '&estrellas=0')
                         .catch(err => console.error('Error limpiando caché (Disc. not found):', err));
+                    return;
+                }
+
+                // Si el mensaje no trae el objeto discussion (por ejemplo, es un evento de re-escalado 'resizeHeight'), lo ignoramos.
+                if (!event.data.giscus.discussion) {
                     return;
                 }
 
@@ -1153,7 +1126,7 @@ $id = $row['id'];
                         .catch(err => console.error('Error sincronizando estrellas:', err));
                 } else {
                     // Si confirmamos que realmente hay 0 votos tras cargar Giscus, podemos mostrar el estado vacío
-                    renderSummaryPanel(null, 0, {}, true); 
+                    renderSummaryPanel(null, 0, {}, true);
                     // Sincronizar el estado vacío a la base de datos para limpiar el caché
                     fetch(base + 'api/actualizar_cache.php?id=' + idPrograma + '&estrellas=0')
                         .catch(err => console.error('Error limpiando caché:', err));
@@ -1172,10 +1145,10 @@ $id = $row['id'];
         const giscusObserver = new MutationObserver(updateGiscusTheme);
         giscusObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-        // Cargar Giscus dinámicamente con el tema correcto desde localStorage
+        // Cargar Giscus dinámicamente con el tema correcto detectado por Encabezado.php
         (function () {
-            const savedTheme = localStorage.getItem('theme');
-            const giscusTheme = savedTheme === 'light' ? 'gruvbox_light' : 'dark';
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const giscusTheme = currentTheme === 'light' ? 'gruvbox_light' : 'dark';
 
             const script = document.createElement('script');
             script.src = 'https://giscus.app/client.js';

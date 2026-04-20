@@ -1,0 +1,9 @@
+RewriteEngine On
+RewriteBase /programa/descargas/
+
+# No procesar si es un archivo o directorio real
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Capturar el slug y pasarlo a index.php
+RewriteRule ^([^/]+)/?$ index.php?slug=$1 [L,QSA]

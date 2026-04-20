@@ -5,5 +5,11 @@ RewriteBase /programa/
 RewriteCond %{QUERY_STRING} (^|&)id=([0-9]+)($|&) [NC]
 RewriteRule ^lista\.php$ /404/404.php? [R=301,L]
 
-# Regla para URLs amigables: /programa/lista/DD/MM/YYYY/slug
-RewriteRule ^lista/([0-9]{2})/([0-9]{2})/([0-9]{4})/([a-zA-Z0-9\-]+)$ lista.php?dia=$1&mes=$2&anio=$3&slug=$4 [QSA,L]
+# Reglas Auxiliares para Explorador de Carpetas (URLs Incompletas)
+RewriteRule ^lista/?$ lista.php [QSA,L]
+RewriteRule ^lista/([0-9]{2})/?$ lista.php?dia=$1 [QSA,L]
+RewriteRule ^lista/([0-9]{2})/([0-9]{2})/?$ lista.php?dia=$1&mes=$2 [QSA,L]
+RewriteRule ^lista/([0-9]{2})/([0-9]{2})/([0-9]{4})/?$ lista.php?dia=$1&mes=$2&anio=$3 [QSA,L]
+
+# Regla para URLs amigables completas: /programa/lista/DD/MM/YYYY/slug
+RewriteRule ^lista/([0-9]{2})/([0-9]{2})/([0-9]{4})/([a-zA-Z0-9\-]+)/?$ lista.php?dia=$1&mes=$2&anio=$3&slug=$4 [QSA,L]
